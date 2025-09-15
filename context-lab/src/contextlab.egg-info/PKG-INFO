@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: contextlab
+Version: 0.1.0
+Summary: Context engineering toolkit: ingestion, retrieval, token budgeting, memory, CLI
+Author: You
+License: MIT
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: openai>=1.40.2
+Requires-Dist: tiktoken>=0.7.0
+Requires-Dist: chromadb>=0.5.3
+Requires-Dist: sentence-transformers>=3.0.1
+Requires-Dist: typer>=0.12.3
+Requires-Dist: pydantic>=2.8.2
+Requires-Dist: pyyaml>=6.0.2
+Requires-Dist: rich>=13.7.1
+Requires-Dist: python-dotenv>=1.0.1
+Requires-Dist: pytest>=8.3.2
+
+# context-lab (Context Engineering Toolkit)
+Exact, reproducible setup to ingest docs, assemble context within a token budget, retrieve+memory, and query an LLM via CLI.
