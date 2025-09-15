@@ -1,0 +1,56 @@
+Copy everything between the fences into a new `.gitignore` at the repo root.
+
+```gitignore
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# --- Logs / caches ---
+*.log
+logs/
+.cache/
+
+# --- Python (safe even if unused) ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# --- Node / web (safe even if unused) ---
+node_modules/
+.npm/
+.pnpm-store/
+yarn*.log
+pnpm-*.log
+npm-debug.log*
+.pnp.cjs
+.pnp.loader.mjs
+coverage/
+dist/
+build/
+
+# --- Secrets & env (never commit real secrets) ---
+.env
+.env.*
+!.env.example
+
+# --- Misc binaries / certs / db ---
+*.sqlite
+*.db
+*.pem
+*.key
+*.crt
+```
+
+Steps:
+
+1. GitHub → **Add file → Create new file** → name: `.gitignore`.
+2. Paste the block above → commit to `main`.
+3. (Optional) Add `.env.example` with safe placeholders.
