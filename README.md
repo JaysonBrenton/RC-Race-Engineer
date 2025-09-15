@@ -1,6 +1,6 @@
 # RC-Race-Engineer
 
-> WIP: Short one‑liner about the project (e.g., telemetry + strategy helper for RC racing). Update once scope is set.
+> WIP: RC racing tools for faster laps: timing, telemetry, strategy.
 
 ## Status
 Pre‑alpha — exploring scope and requirements. PRs welcome.
