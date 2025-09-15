@@ -3,7 +3,7 @@
 > WIP: RC racing tools for faster laps: timing, telemetry, strategy.
 
 ## Status
-Pre‑alpha — exploring scope and requirements. PRs welcome.
+Pre‑alpha — exploring scope and requirements.
 
 ## Goals
 - Clean, maintainable code and docs
