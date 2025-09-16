@@ -54,3 +54,6 @@ Steps:
 1. GitHub → **Add file → Create new file** → name: `.gitignore`.
 2. Paste the block above → commit to `main`.
 3. (Optional) Add `.env.example` with safe placeholders.
+
+# Evidence logs
+_evidence/
