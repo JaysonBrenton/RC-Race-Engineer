@@ -1,0 +1,55 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Driver {
+  id           String   @id @default(cuid())
+  name         String
+  transponder  String?
+  createdAt    DateTime @default(now())
+
+  sessions     SessionParticipant[]
+  laps         Lap[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  name         String
+  track        String?
+  date         DateTime?
+  createdAt    DateTime @default(now())
+
+  participants SessionParticipant[]
+  laps         Lap[]
+}
+
+model SessionParticipant {
+  id        String  @id @default(cuid())
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+  driver    Driver  @relation(fields: [driverId], references: [id])
+  driverId  String
+  team      String?
+  car       String?
+
+  @@unique([sessionId, driverId])
+}
+
+model Lap {
+  id         String   @id @default(cuid())
+  session    Session  @relation(fields: [sessionId], references: [id])
+  sessionId  String
+  driver     Driver   @relation(fields: [driverId], references: [id])
+  driverId   String
+  lapNumber  Int
+  timeMs     Int
+  valid      Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@index([sessionId, driverId, lapNumber])
+}

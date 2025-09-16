@@ -1,0 +1,46 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "headers": "node scripts/add-headers.mjs",
+    "format": "prettier --write .",
+    "typecheck": "tsc -v >/dev/null 2>&1 || echo 'tsc not configured'",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.1",
+    "next": "15.5.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "15.5.3",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-import": "^2.32.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.2",
+    "prisma": "^6.16.1",
+    "tailwindcss": "^4",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "node scripts/add-headers.mjs",
+      "prettier --write",
+      "eslint --fix"
+    ]
+  }
+}

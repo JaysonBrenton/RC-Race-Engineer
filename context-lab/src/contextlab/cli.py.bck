@@ -10,8 +10,7 @@ from .config import load_settings
 from .store import VectorStore
 from .llm import answer
 from .memory import Memory
-from .scraper import scrape_site, search_index  # scraper/search
-from .doctor import get_diagnostics  # NEW
+from .scraper import scrape_site, search_index  # NEW
 
 app = typer.Typer(add_completion=False, help="Context Engineering CLI")
 con = Console()
@@ -117,31 +116,6 @@ def search(
             r.get("url") or "",
             r.get("path_md") or "",
         )
-    con.print(tbl)
-
-# -------------------- NEW: doctor command --------------------
-
-@app.command()
-def doctor():
-    """Show project diagnostics: config, rules, index, and vector store."""
-    s = load_settings()
-    d = get_diagnostics(s).as_dict()
-
-    tbl = Table(title="Context Lab — doctor", show_header=True, header_style="bold")
-    tbl.add_column("Key"); tbl.add_column("Value")
-    for k in [
-        "root_dir",
-        "store_path",
-        "chat_model",
-        "embedding_backend",
-        "embedding_model",
-        "session_rules_present",
-        "web_index_rows",
-        "md_files",
-        "emb_exists",
-        "emb_shape",
-    ]:
-        tbl.add_row(k, str(d.get(k)))
     con.print(tbl)
 
 # Allow `python -m contextlab.cli`

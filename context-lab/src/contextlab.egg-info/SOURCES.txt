@@ -4,9 +4,11 @@ src/contextlab/__init__.py
 src/contextlab/assembler.py
 src/contextlab/cli.py
 src/contextlab/config.py
+src/contextlab/doctor.py
 src/contextlab/embeddings.py
 src/contextlab/llm.py
 src/contextlab/memory.py
+src/contextlab/scraper.py
 src/contextlab/sqlite_compat.py
 src/contextlab/store.py
 src/contextlab/store_numpy.py
