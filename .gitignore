@@ -1,0 +1,12 @@
+# Evidence/logs
+_evidence/
+
+# Node/Next.js
+node_modules/
+web/.next/
+web/.turbo/
+web/out/
+
+# Editor/OS
+.DS_Store
+.vscode/
