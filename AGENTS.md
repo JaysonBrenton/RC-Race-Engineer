@@ -4,7 +4,7 @@ These rules apply to any AI/code agent working in this repo (e.g., Codex).
 
 ## Golden rules
 - **Branch**: Use the branch **explicitly named by the human** (e.g., `codex/<task>`). If it doesn’t exist, create **exactly that name**. Do **not** invent alternatives or create duplicates.
-- **PRs**: Open **one** PR to `main` and request **Squash merge**. Never push to `main` directly.
+- **PRs**: **Solo mode** — direct commits to `main` are allowed. When collaborating, switch to PRs with Squash merge.
 - **Small diffs**: Keep PRs small and focused. If >300 lines changed, split into sequential PRs.
 - **Checks first**: Run lint/typecheck/build/tests locally. If checks fail, **do not push**—return a diff/patch and the exact errors.
 - **Respect `.gitignore`**: Never commit `_evidence/`, `web/.next/`, `node_modules/`, OS/editor files, or large/binary artefacts.
