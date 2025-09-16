@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // If your role does NOT have CREATEDB, uncomment the next line and set SHADOW_DATABASE_URL in .env
+  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Driver {
+  id          String   @id @default(cuid())
+  name        String
+  transponder String? @db.VarChar(20)  // LiveRC transponder if available
+  createdAt   DateTime @default(now())
+
+  laps        Lap[]
+  sessions    SessionParticipant[]
+
+  // Initial uniqueness: (name, transponder). Note: Postgres allows multiple NULL transponder rows.
+  @@unique([name, transponder])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  name         String
+  track        String?
+  date         DateTime?
+  createdAt    DateTime @default(now())
+
+  participants SessionParticipant[]
+  laps         Lap[]
+}
+
+model SessionParticipant {
+  id        String  @id @default(cuid())
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+  driver    Driver  @relation(fields: [driverId], references: [id])
+  driverId  String
+  team      String?
+  car       String?
+
+  @@unique([sessionId, driverId])
+  @@index([sessionId])
+  @@index([driverId])
+}
+
+model Lap {
+  id         String   @id @default(cuid())
+  session    Session  @relation(fields: [sessionId], references: [id])
+  sessionId  String
+  driver     Driver   @relation(fields: [driverId], references: [id])
+  driverId   String
+  lapNumber  Int
+  timeMs     Int
+  sector1Ms  Int?
+  sector2Ms  Int?
+  sector3Ms  Int?
+  valid      Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([driverId])
+  @@index([sessionId, driverId])
+}
