@@ -15,12 +15,9 @@ import { applyVersionHeader } from "../../../lib/versionHeader";
 export function GET() {
   // Capture the environment name so operations teams can double-check context if needed.
   const envSnapshot = process.env.NODE_ENV ?? "development";
-  const readinessProbe = { env: envSnapshot };
-  // The void statement stops TypeScript from complaining that we never used the snapshot.
-  void readinessProbe.env;
 
   // Respond with a simple "ready" message.
-  const response = NextResponse.json({ ready: true });
+  const response = NextResponse.json({ ready: true, env: envSnapshot });
 
   // Stamp the outgoing response with our version header for traceability.
   return applyVersionHeader(response);
