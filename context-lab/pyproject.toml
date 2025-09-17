@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contextlab"
+version = "0.1.0"
+description = "Context engineering toolkit: ingestion, retrieval, token budgeting, memory, CLI"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "You" }]
+license = { text = "MIT" }
+dependencies = [
+  "openai>=1.40.2",
+  "tiktoken>=0.7.0",
+  "chromadb>=0.5.3",
+  "sentence-transformers>=3.0.1",
+  "typer>=0.12.3",
+  "pydantic>=2.8.2",
+  "pyyaml>=6.0.2",
+  "rich>=13.7.1",
+  "python-dotenv>=1.0.1",
+  "pytest>=8.3.2"
+]
+
+[project.scripts]
+contextlab = "contextlab.cli:app"
+
+[tool.setuptools.package-data]
+contextlab = ["../templates/*"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-q"
+pythonpath = ["src"]

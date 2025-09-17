@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.DS_Store
+data/chroma/
+.ctx/
+.env
+.pytest_cache/
