@@ -56,5 +56,6 @@ describe("GET /api/ready", () => {
     expect(response.headers.get("content-type")).toContain("application/json");
     expect(response.headers.get(VERSION_HEADER_NAME)).toBe("commit-hash");
     expect(payload.ready).toBe(true);
+    expect(payload.env).toBe("production");
   });
 });
