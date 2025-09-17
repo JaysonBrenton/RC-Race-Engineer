@@ -1,31 +1,42 @@
+# filepath: src/contextlab/memory.py
+"""Persistent conversational memory stored as JSONL records."""
+
 from __future__ import annotations
+
 import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple
+
 from .config import Settings
 from .tokenizer import count_tokens
 
 @dataclass
 class Memory:
+    """Simple append-only text memory for previous interactions."""
+
     settings: Settings
 
     @property
     def path(self) -> Path:
+        """Location of the memory log file."""
         return Path(".ctx/memory.jsonl")
 
     def add(self, text: str) -> None:
+        """Append a new text snippet to the memory log."""
         self.path.parent.mkdir(parents=True, exist_ok=True)
         rec = {"text": text}
         with self.path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
     def recent(self, cap_tokens: int) -> Tuple[str, List[str]]:
+        """Return most recent snippets that fit within *cap_tokens* tokens."""
         if not self.path.exists():
             return "", []
         lines = self.path.read_text(encoding="utf-8").splitlines()
         picked: List[str] = []
         total = 0
+        # Iterate backwards so the newest entries are considered first.
         for line in reversed(lines):
             try:
                 obj = json.loads(line)
@@ -42,5 +53,6 @@ class Memory:
         return buff, picked
 
     def clear(self) -> None:
+        """Remove any stored memory, useful for a fresh start."""
         if self.path.exists():
             self.path.unlink()
