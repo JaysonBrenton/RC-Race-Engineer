@@ -1,0 +1,13 @@
+{
+  "name": "rc-race-engineer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
+  }
+}

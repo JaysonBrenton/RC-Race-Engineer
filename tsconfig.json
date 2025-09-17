@@ -1,0 +1,30 @@
+// ============================================================================
+// File: tsconfig.json
+// Purpose: Describe to TypeScript how to understand and compile our project.
+// Author: Jayson + The Brainy One
+// Last Updated: 2024-05-07
+// ============================================================================
+{
+  "compilerOptions": {
+    // Output modern JavaScript that still runs in current environments.
+    "target": "ES2022",
+    // Pull in the DOM and iterable helpers so browser and utility APIs are known.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    // Use native ES modules which is how Next.js structures the project.
+    "module": "ESNext",
+    // Look up modules the same way Node.js does.
+    "moduleResolution": "Node",
+    // Force TypeScript to treat all files as modules which improves type safety.
+    "moduleDetection": "force",
+    // Allow default imports from CommonJS modules without extra fuss.
+    "esModuleInterop": true,
+    // Keep the type checker on its toes so mistakes are caught early.
+    "strict": true,
+    // Skip type checking for dependencies we do not control to speed things up.
+    "skipLibCheck": true,
+    // Tell TypeScript about the global functions Vitest injects plus Node types.
+    "types": ["vitest/globals", "node"]
+  },
+  // Ask TypeScript to pay attention to our API code and the Vitest config file.
+  "include": ["web/**/*.ts", "vitest.config.ts"]
+}
