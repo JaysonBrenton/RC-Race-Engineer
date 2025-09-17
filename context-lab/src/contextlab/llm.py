@@ -1,12 +1,20 @@
+# filepath: src/contextlab/llm.py
+"""High-level question answering pipeline built on top of OpenAI chat."""
+
 from __future__ import annotations
+
 from typing import Dict, Tuple
+
 from openai import OpenAI
+
 from .config import Settings
 from .assembler import Assembler
 from .store import VectorStore
 from .memory import Memory
 
+
 def answer(question: str, settings: Settings, show_context: bool = False) -> Tuple[str, Dict]:
+    """Generate an answer and optionally return the assembled context."""
     store = VectorStore(settings)
     memory = Memory(settings)
     asm = Assembler(settings, store, memory)
@@ -24,6 +32,7 @@ def answer(question: str, settings: Settings, show_context: bool = False) -> Tup
     )
     text = resp.choices[0].message.content
 
+    # Store a clipped version of the exchange for follow-up conversations.
     memory.add(f"Q: {question}\nA: {text[:1200]}")
 
     if show_context:
