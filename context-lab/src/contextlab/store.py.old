@@ -1,0 +1,59 @@
+from __future__ import annotations
+import hashlib
+from pathlib import Path
+from typing import Dict, List, Tuple
+import chromadb
+from chromadb.api.types import Documents, Embeddings as Vectors, IDs, Metadatas
+from .config import Settings
+from .tokenizer import chunk_by_tokens
+from .embeddings import Embeddings
+
+def _hash(s: str) -> str:
+    return hashlib.sha1(s.encode("utf-8")).hexdigest()[:16]
+
+def _collect_files(root: Path) -> List[Path]:
+    return [p for p in root.rglob("*") if p.suffix.lower() in {".md", ".txt"} and p.is_file()]
+
+class VectorStore:
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
+        self.client = chromadb.PersistentClient(path=str(Path(settings.store_path)))
+        self.coll = self.client.get_or_create_collection(name=settings.collection_name)
+        self.embedder = Embeddings(settings)
+
+    def rebuild(self) -> None:
+        try:
+            self.client.delete_collection(self.settings.collection_name)
+        except Exception:
+            pass
+        self.coll = self.client.get_or_create_collection(name=self.settings.collection_name)
+
+    def ingest_dir(self, directory: Path) -> int:
+        directory = Path(directory)
+        files = _collect_files(directory)
+        total_chunks = 0
+        for f in files:
+            text = f.read_text(encoding="utf-8", errors="ignore")
+            chunks = chunk_by_tokens(text, self.settings.chunk_tokens, self.settings.chunk_overlap)
+            if not chunks:
+                continue
+            ids: IDs = []
+            docs: Documents = []
+            metas: Metadatas = []
+            for i, ch in enumerate(chunks):
+                cid = f"{_hash(str(f))}_{i}"
+                ids.append(cid)
+                docs.append(ch)
+                metas.append({"source": str(f), "chunk": i})
+            vecs: Vectors = self.embedder.embed_texts(docs)  # precompute
+            self.coll.add(ids=ids, documents=docs, metadatas=metas, embeddings=vecs)
+            total_chunks += len(chunks)
+        return total_chunks
+
+    def query(self, query: str, top_k: int) -> Tuple[List[str], List[Dict], List[str]]:
+        vec = self.embedder.embed_texts([query])[0]
+        res = self.coll.query(query_embeddings=[vec], n_results=top_k, include=["documents", "metadatas", "distances", "embeddings", "ids"])
+        docs = res.get("documents", [[]])[0]
+        metas = res.get("metadatas", [[]])[0]
+        ids = res.get("ids", [[]])[0]
+        return docs, metas, ids

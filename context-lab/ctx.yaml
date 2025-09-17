@@ -1,0 +1,13 @@
+project_name: context-lab
+store_path: data/chroma
+collection_name: contextlab
+embedding_backend: openai
+sbert_model: all-MiniLM-L6-v2
+openai_embedding_model: text-embedding-3-small
+chat_model: gpt-4o-mini
+max_context_tokens: 6000
+response_reserve_tokens: 1000
+retrieval_top_k: 6
+chunk_tokens: 400
+chunk_overlap: 40
+memory_cap_tokens: 1500

@@ -1,0 +1,2 @@
+{"role":"user","content":"Explain context engineering briefly."}
+{"role":"assistant","content":"Context engineering: curate and budget system/rules/examples/memory/retrieval so the model sees the most useful information within a token cap."}
