@@ -1,103 +1,99 @@
-import Image from "next/image";
+import "@/server/bootstrap";
+import { listSessions } from "@/core/app/sessions/listSessions";
+import type { Session } from "@/core/domain/session";
+import { SessionForm } from "./_components/SessionForm";
 
-export default function Home() {
+const timeFormatter = new Intl.DateTimeFormat("en-GB", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "UTC",
+});
+
+export default async function Home() {
+  let sessions: Session[] = [];
+  let loadError: string | null = null;
+
+  try {
+    sessions = await listSessions();
+  } catch (error) {
+    loadError = error instanceof Error ? error.message : "Unable to load sessions";
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-12">
+        <header className="space-y-4">
+          <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">RC Race Engineer</p>
+          <h1 className="text-3xl font-semibold sm:text-4xl">Session control tower</h1>
+          <p className="max-w-2xl text-base text-neutral-600 dark:text-neutral-400">
+            Create race-weekend sessions and confirm the ingest pipeline before wiring external timing feeds. Once a
+            session exists, telemetry events can stream against a concrete identifier.
+          </p>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+        <section className="grid gap-8 lg:grid-cols-[1.25fr_minmax(0,1fr)]">
+          <SessionForm />
+
+          <aside className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">Recent sessions</h2>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                Latest entries appear first. Use this list to confirm telemetry writes target the right identifiers.
+              </p>
+            </div>
+
+            {loadError ? (
+              <div className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+                Unable to load sessions: {loadError}
+              </div>
+            ) : sessions.length === 0 ? (
+              <div className="rounded-md border border-dashed border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900 p-6 text-sm text-neutral-600 dark:text-neutral-400">
+                No sessions yet. Use the form to plan your first run and validate the ingest flow end-to-end.
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {sessions.map((session) => (
+                  <li key={session.id} className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm uppercase tracking-wide text-neutral-500">{formatKind(session.kind)}</p>
+                        <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{session.name}</p>
+                      </div>
+                      <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-900/40 dark:text-sky-200">
+                        {session.status}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
+                      {formatSchedule(session)}
+                    </p>
+                    {session.description && (
+                      <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">{session.description}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </aside>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
+}
+
+function formatSchedule(session: Session): string {
+  if (session.scheduledStart && session.scheduledEnd) {
+    return `${timeFormatter.format(new Date(session.scheduledStart))} → ${timeFormatter.format(new Date(session.scheduledEnd))} UTC`;
+  }
+  if (session.scheduledStart) {
+    return `${timeFormatter.format(new Date(session.scheduledStart))} UTC`;
+  }
+  return "Schedule not yet defined";
+}
+
+function formatKind(kind: Session["kind"]): string {
+  return kind
+    .toLowerCase()
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
