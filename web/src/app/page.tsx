@@ -1,103 +1,291 @@
-import Image from "next/image";
+const sessionHighlights = [
+  {
+    title: "Active session",
+    value: "Qualifying",
+    details: "Q3 · 08:12 remaining",
+    accent: "var(--color-track)",
+  },
+  {
+    title: "Driver focus",
+    value: "A. López",
+    details: "Lap 17 of 20 · Soft tyres",
+    accent: "var(--color-temp-tyre)",
+  },
+  {
+    title: "Stint delta",
+    value: "-0.214 s",
+    details: "vs personal best (lap 14)",
+    accent: "var(--color-speed)",
+  },
+];
+
+const telemetryPanels = [
+  {
+    name: "Speed vs throttle",
+    summary: "Live differential with 200 ms smoothing",
+    primaryToken: "var(--color-speed)",
+    secondaryToken: "var(--color-throttle)",
+  },
+  {
+    name: "Brake pressure & temps",
+    summary: "Front brake bias holding 58% · Tyre window stable",
+    primaryToken: "var(--color-brake)",
+    secondaryToken: "var(--color-temp-brake)",
+  },
+  {
+    name: "RPM & gear progression",
+    summary: "Shift points aligned with target band",
+    primaryToken: "var(--color-rpm)",
+    secondaryToken: "var(--color-gear)",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div
+      className="min-h-screen"
+      style={{
+        backgroundColor: "var(--color-background)",
+        color: "var(--color-foreground)",
+      }}
+    >
+      <main
+        className="mx-auto flex w-full max-w-6xl flex-col"
+        style={{
+          gap: "var(--space-6)",
+          paddingBlock: "var(--space-7)",
+          paddingInline: "clamp(var(--space-4), 5vw, var(--space-7))",
+        }}
+      >
+        <header
+          className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+          style={{ gap: "var(--space-3)" }}
+        >
+          <div className="flex flex-col" style={{ gap: "var(--space-2)" }}>
+            <p
+              className="uppercase tracking-wide"
+              style={{
+                color: "var(--color-ambient)",
+                fontSize: "var(--font-size-sm)",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Session overview
+            </p>
+            <h1
+              className="font-semibold"
+              style={{ fontSize: "var(--font-size-2xl)", lineHeight: 1.2 }}
+            >
+              RC Race Engineer control room
+            </h1>
+            <p style={{ fontSize: "var(--font-size-md)", maxWidth: "52ch" }}>
+              Glanceable status for the current running session. Critical signals
+              stay synchronized across telemetry, timing, and tyre management.
+            </p>
+          </div>
+          <div
+            className="self-stretch rounded-md border shadow-sm sm:self-auto"
+            role="status"
+            style={{
+              alignItems: "center",
+              borderColor: "var(--color-track)",
+              borderRadius: "var(--radius-md)",
+              display: "flex",
+              gap: "var(--space-2)",
+              paddingBlock: "var(--space-2)",
+              paddingInline: "var(--space-4)",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <span
+              aria-hidden
+              style={{
+                backgroundColor: "var(--color-speed)",
+                borderRadius: "9999px",
+                display: "inline-block",
+                height: "0.75rem",
+                width: "0.75rem",
+              }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="flex flex-col" style={{ gap: "0.15rem" }}>
+              <span style={{ fontSize: "var(--font-size-sm)", fontWeight: 600 }}>
+                Next push window in 02:10
+              </span>
+              <span style={{ fontSize: "var(--font-size-xs)", opacity: 0.75 }}>
+                Track evolution +0.6% • Weather stable at 22°C ambient
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <section aria-labelledby="session-summary" className="flex flex-col">
+          <div
+            className="flex items-baseline justify-between"
+            style={{ marginBottom: "var(--space-3)" }}
           >
-            Read our docs
-          </a>
-        </div>
+            <h2 id="session-summary" style={{ fontSize: "var(--font-size-lg)", fontWeight: 600 }}>
+              Session summary
+            </h2>
+            <span style={{ fontSize: "var(--font-size-sm)", opacity: 0.7 }}>
+              Updated 18 seconds ago
+            </span>
+          </div>
+          <div
+            className="grid gap-4 sm:grid-cols-3"
+            style={{ gap: "var(--space-4)" }}
+          >
+            {sessionHighlights.map((highlight) => (
+              <article
+                key={highlight.title}
+                className="border backdrop-blur"
+                style={{
+                  backgroundColor: "var(--surface-raised)",
+                  borderColor: highlight.accent,
+                  borderRadius: "var(--radius-lg)",
+                  boxShadow: "var(--shadow-card)",
+                  color: "inherit",
+                  padding: "var(--space-5)",
+                }}
+              >
+                <h3
+                  className="text-sm font-medium uppercase tracking-wide"
+                  style={{
+                    color: highlight.accent,
+                    fontSize: "var(--font-size-sm)",
+                    letterSpacing: "0.08em",
+                    marginBottom: "var(--space-2)",
+                  }}
+                >
+                  {highlight.title}
+                </h3>
+                <p
+                  className="font-semibold"
+                  style={{
+                    fontSize: "var(--font-size-xl)",
+                    lineHeight: 1.2,
+                    marginBottom: "var(--space-1)",
+                  }}
+                >
+                  {highlight.value}
+                </p>
+                <p style={{ fontSize: "var(--font-size-sm)", opacity: 0.8 }}>
+                  {highlight.details}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="telemetry-overview"
+          className="flex flex-col"
+          style={{ gap: "var(--space-4)" }}
+        >
+          <h2 id="telemetry-overview" style={{ fontSize: "var(--font-size-lg)", fontWeight: 600 }}>
+            Telemetry focus
+          </h2>
+          <div className="grid gap-4 lg:grid-cols-3" style={{ gap: "var(--space-4)" }}>
+            {telemetryPanels.map((panel) => (
+              <article
+                key={panel.name}
+                className="flex flex-col rounded-md border"
+                style={{
+                  borderColor: panel.primaryToken,
+                  borderRadius: "var(--radius-lg)",
+                  padding: "var(--space-4)",
+                  gap: "var(--space-3)",
+                }}
+              >
+                <header className="flex flex-col" style={{ gap: "var(--space-1)" }}>
+                  <h3
+                    className="font-semibold"
+                    style={{ fontSize: "var(--font-size-md)", lineHeight: 1.4 }}
+                  >
+                    {panel.name}
+                  </h3>
+                  <p style={{ fontSize: "var(--font-size-sm)", opacity: 0.8 }}>
+                    {panel.summary}
+                  </p>
+                </header>
+                <div
+                  aria-hidden
+                  className="flex-1 rounded-md border border-dashed"
+                  style={{
+                    borderColor: panel.primaryToken,
+                    borderRadius: "var(--radius-md)",
+                    minHeight: "10rem",
+                    padding: "var(--space-3)",
+                    position: "relative",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: `linear-gradient(135deg, ${panel.primaryToken} 0%, ${panel.primaryToken} 40%, ${panel.secondaryToken} 100%)`,
+                      borderRadius: "calc(var(--radius-md) - 4px)",
+                      height: "100%",
+                      opacity: 0.18,
+                      width: "100%",
+                    }}
+                  />
+                  <div
+                    style={{
+                      alignItems: "center",
+                      bottom: "var(--space-3)",
+                      color: "var(--color-foreground)",
+                      display: "flex",
+                      fontSize: "var(--font-size-xs)",
+                      gap: "var(--space-2)",
+                      justifyContent: "space-between",
+                      left: "var(--space-3)",
+                      position: "absolute",
+                      right: "var(--space-3)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        alignItems: "center",
+                        display: "inline-flex",
+                        gap: "0.35rem",
+                      }}
+                    >
+                      <span
+                        style={{
+                          backgroundColor: panel.primaryToken,
+                          borderRadius: "999px",
+                          display: "inline-block",
+                          height: "0.5rem",
+                          width: "0.5rem",
+                        }}
+                      />
+                      Primary signal
+                    </span>
+                    <span
+                      style={{
+                        alignItems: "center",
+                        display: "inline-flex",
+                        gap: "0.35rem",
+                      }}
+                    >
+                      <span
+                        style={{
+                          backgroundColor: panel.secondaryToken,
+                          borderRadius: "999px",
+                          display: "inline-block",
+                          height: "0.5rem",
+                          width: "0.5rem",
+                        }}
+                      />
+                      Reference band
+                    </span>
+                  </div>
+                </div>
+                <p style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }}>
+                  Cursor sync and lap comparisons available in the telemetry deck.
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
