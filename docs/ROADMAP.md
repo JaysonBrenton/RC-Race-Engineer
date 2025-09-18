@@ -6,10 +6,10 @@ _Principles: ship small, keep main green, document decisions with ADRs._
 - [x] Next.js app scaffold under `web/`
 - [x] Dev service via systemd on port 3001; firewall/SELinux opened
 - [x] Repo guardrails docs (AGENTS, design/UX/model)
-- [ ] API heartbeat: /api/health, /api/ready, /api/version
-- [ ] Data foundation: Postgres + Prisma (Sessions, Telemetry)
+- [x] API heartbeat: /api/health, /api/ready, /api/version
+- [x] Data foundation: Postgres + Prisma (Sessions, Telemetry)
 - [ ] Endpoints: POST /api/sessions, POST /api/sessions/[id]/events, GET lists
-- [ ] Minimal UI: create/list sessions, post demo event
+- [ ] Minimal UI: create/list sessions, post demo event *(create/list done; demo event pending)*
 - [ ] First ADRs: runtime mode; telemetry store/retention; color tokens plan
 
 ## 0.2 MVP

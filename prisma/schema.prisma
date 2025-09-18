@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SessionKind {
+  FP1
+  FP2
+  FP3
+  PRACTICE
+  QUALIFYING
+  RACE
+  TEST
+  OTHER
+}
+
+enum SessionStatus {
+  SCHEDULED
+  LIVE
+  COMPLETE
+  CANCELLED
+}
+
+model Session {
+  id             String            @id @default(uuid())
+  name           String
+  description    String?
+  kind           SessionKind
+  status         SessionStatus     @default(SCHEDULED)
+  scheduledStart DateTime?
+  scheduledEnd   DateTime?
+  actualStart    DateTime?
+  actualEnd      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  telemetry      TelemetrySample[]
+}
+
+model TelemetrySample {
+  id         String   @id @default(uuid())
+  sessionId  String
+  recordedAt DateTime
+  speedKph   Float?
+  throttlePct Float?
+  brakePct   Float?
+  rpm        Int?
+  gear       Int?
+  createdAt  DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, recordedAt])
+}
