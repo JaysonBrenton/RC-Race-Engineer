@@ -32,7 +32,7 @@ npx prisma generate
 
 ## 4. Apply database migrations (only when needed)
 ```bash
-cd /home/jayson/Development/RCRaceEngineer
+cd /home/jayson/Development/RCRaceEngineer/web
 npx prisma migrate deploy
 ```
 Include any seeding or rollback steps the author provided.
