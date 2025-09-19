@@ -2,6 +2,7 @@
 
 ## Level 1 / Level 2 (Implementation contract)
 
+When ingesting or analysing LiveRC data, follow LiveRC-Metadata.md, ingestion-plan.md, and model-extensions.md and honour performance budgets + telemetry.
 When ingesting or analysing LiveRC data, follow:
 - docs/codex/LiveRC-Metadata.md
 - docs/codex/ingestion-plan.md
