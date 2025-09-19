@@ -25,6 +25,11 @@ enum SessionStatus {
   CANCELLED
 }
 
+enum TimingProvider {
+  MANUAL
+  LIVE_RC
+}
+
 model Session {
   id             String            @id @default(uuid())
   name           String
@@ -35,9 +40,12 @@ model Session {
   scheduledEnd   DateTime?
   actualStart    DateTime?
   actualEnd      DateTime?
+  timingProvider TimingProvider   @default(MANUAL)
+  liveRcHeatId   String?          @unique
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   telemetry      TelemetrySample[]
+  liveRcHeat     LiveRcHeat?       @relation("SessionLiveRcHeat", fields: [liveRcHeatId], references: [id])
 }
 
 model TelemetrySample {
@@ -54,4 +62,103 @@ model TelemetrySample {
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, recordedAt])
+}
+
+model LiveRcEvent {
+  id             String        @id @default(uuid())
+  externalEventId Int          @unique
+  title          String
+  trackName      String?
+  facility       String?
+  city           String?
+  region         String?
+  country        String?
+  timeZone       String?
+  startTime      DateTime?
+  endTime        DateTime?
+  website        String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  classes LiveRcClass[]
+
+  @@index([startTime])
+}
+
+model LiveRcClass {
+  id             String        @id @default(uuid())
+  eventId        String
+  externalClassId Int
+  name           String
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  event LiveRcEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  heats LiveRcHeat[]
+  entries LiveRcEntry[]
+
+  @@unique([eventId, externalClassId])
+}
+
+model LiveRcHeat {
+  id              String        @id @default(uuid())
+  classId         String
+  externalHeatId  Int
+  label           String
+  round           Int?
+  attempt         Int?
+  scheduledStart  DateTime?
+  durationSeconds Int?
+  status          String?
+  liveStreamUrl   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  class   LiveRcClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  session Session?    @relation("SessionLiveRcHeat")
+  results LiveRcResult[]
+
+  @@unique([classId, externalHeatId])
+  @@index([scheduledStart])
+}
+
+model LiveRcEntry {
+  id              String        @id @default(uuid())
+  classId         String
+  externalEntryId Int
+  driverName      String
+  carNumber       String?
+  transponder     String?
+  vehicle         String?
+  sponsor         String?
+  hometownCity    String?
+  hometownRegion  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  class   LiveRcClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  results LiveRcResult[]
+
+  @@unique([classId, externalEntryId])
+}
+
+model LiveRcResult {
+  id              String        @id @default(uuid())
+  heatId          String
+  entryId         String
+  externalResultId Int
+  finishPosition  Int?
+  lapsCompleted   Int?
+  totalTimeMs     Int?
+  fastLapMs       Int?
+  intervalMs      Int?
+  status          String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  heat  LiveRcHeat  @relation(fields: [heatId], references: [id], onDelete: Cascade)
+  entry LiveRcEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([heatId, entryId])
 }

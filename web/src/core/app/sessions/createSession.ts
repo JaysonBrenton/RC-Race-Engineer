@@ -4,10 +4,10 @@ import type { SessionDependencies } from "./ports";
 import { getSessionRepository } from "./serviceLocator";
 
 export async function createSession(payload: unknown, deps?: Partial<SessionDependencies>): Promise<Session> {
-  let input;
+  let input: ReturnType<typeof validateCreateSessionInput>;
   try {
     input = validateCreateSessionInput(payload);
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof InvalidSessionInputError) {
       throw Object.assign(new Error("ValidationError"), { issues: error.issues, status: 400 });
     }

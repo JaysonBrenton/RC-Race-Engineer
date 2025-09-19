@@ -10,6 +10,12 @@ This document is the source of truth for entities, relations, and invariants. PR
 - **Track**
 - **Event** (e.g., race weekend)
 - **Session** (practice/qualifying/race)
+- **TimingProvider** (enum representing telemetry/timing source)
+- **LiveRcEvent** (external event metadata)
+- **LiveRcClass** (class/category within a LiveRC event)
+- **LiveRcHeat** (specific round/heat published by LiveRC)
+- **LiveRcEntry** (competitor roster from LiveRC)
+- **LiveRcResult** (per-heat finishing data from LiveRC)
 - **Lap**
 - **Stint**
 - **TelemetrySample** (time-series metrics per car)
@@ -27,6 +33,15 @@ graph TD
   Team --< Drivers
   Event --> Track
   Event --< Sessions
+  TimingProvider --> Session
+  LiveRcEvent --< LiveRcClass
+  LiveRcClass --< LiveRcHeat
+  LiveRcClass --< LiveRcEntry
+  LiveRcHeat --< LiveRcResult
+  LiveRcHeat --> Session
+  LiveRcResult --> LiveRcEntry
+  LiveRcHeat --> LiveRcClass
+  LiveRcClass --> LiveRcEvent
   Session --< Stints
   Session --< Laps
   Stint --> Car
@@ -57,6 +72,12 @@ graph TD
 - **Track**: `id`, `name`, `country`, `layoutVersion`, `lengthKm`, `turnCount`, `timezone`. *Invariant*: `(name, layoutVersion)` unique.
 - **Event**: `id`, `trackId`, `season`, `round`, `name`, `startDate`, `endDate`. *Invariant*: `(season, round)` unique; `startDate <= endDate`.
 - **Session**: `id`, `name`, `description?`, `eventId?`, `kind` (`FP1`, `FP2`, `FP3`, `Practice`, `Qualifying`, `Race`, `Test`, `Other`), `status` (`Scheduled`, `Live`, `Complete`, `Cancelled`), `scheduledStart?`, `scheduledEnd?`, `actualStart?`, `actualEnd?`, `createdAt`, `updatedAt`. *Invariant*: `scheduledEnd` ≥ `scheduledStart` when both present; actual times fall within the scheduled range when provided.
+- **TimingProvider**: enum of `Manual`, `LiveRc`. *Invariant*: `LiveRc` sessions must link to `LiveRcHeat` metadata.
+- **LiveRcEvent**: `id`, `externalEventId`, `title`, `trackName`, `facility?`, `city?`, `region?`, `country?`, `timeZone?`, `startTime?`, `endTime?`, `website?`, `createdAt`, `updatedAt`. *Invariant*: `externalEventId` unique; date range respects `startTime <= endTime` when both present.
+- **LiveRcClass**: `id`, `eventId`, `externalClassId`, `name`, `description?`, `createdAt`, `updatedAt`. *Invariant*: combination `(eventId, externalClassId)` unique.
+- **LiveRcHeat**: `id`, `classId`, `externalHeatId`, `label`, `round?`, `attempt?`, `scheduledStart?`, `durationSeconds?`, `status?`, `liveStreamUrl?`, `createdAt`, `updatedAt`. *Invariant*: `(classId, externalHeatId)` unique; heat schedules must fall within the parent event window when known.
+- **LiveRcEntry**: `id`, `classId`, `externalEntryId`, `driverName`, `carNumber?`, `transponder?`, `vehicle?`, `sponsor?`, `hometownCity?`, `hometownRegion?`, `createdAt`, `updatedAt`. *Invariant*: `(classId, externalEntryId)` unique.
+- **LiveRcResult**: `id`, `heatId`, `entryId`, `externalResultId`, `finishPosition?`, `lapsCompleted?`, `totalTimeMs?`, `fastLapMs?`, `intervalMs?`, `status?`, `createdAt`, `updatedAt`. *Invariant*: `(heatId, entryId)` unique; `finishPosition` positive when present.
 - **Stint**: `id`, `sessionId`, `carId`, `driverId`, `tyreSetId`, `startLap`, `endLap`, `compound`, `fuelStartKg`, `fuelEndKg`. *Invariant*: `startLap <= endLap`; stints for same car cannot overlap laps.
 - **Lap**: `id`, `sessionId`, `carId`, `lapNumber`, `driverId`, `timeMs`, `isInLap`, `isOutLap`, `isPitLap`, `sector1Ms`, `sector2Ms`, `sector3Ms`, `trackStatus`. *Invariant*: lap numbers contiguous per session+car; sector sums within ±10ms of `timeMs`.
 - **TelemetrySample**: `id`, `sessionId`, `carId?`, `driverId?`, `lapId?`, `recordedAt`, `speedKph?`, `throttlePct?`, `brakePct?`, `rpm?`, `gear?`, `createdAt`. *Invariant*: timestamps monotonic per session+car; throttle/brake 0–100; gear in allowed set.

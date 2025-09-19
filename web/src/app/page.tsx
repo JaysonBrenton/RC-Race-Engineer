@@ -69,6 +69,27 @@ export default async function Home() {
                     {session.description && (
                       <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">{session.description}</p>
                     )}
+                    <dl className="mt-3 grid gap-2 text-xs text-neutral-600 dark:text-neutral-400 sm:grid-cols-2">
+                      <div>
+                        <dt className="font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
+                          Timing source
+                        </dt>
+                        <dd className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
+                          {formatTimingProvider(session.timingProvider)}
+                        </dd>
+                      </div>
+                      {session.liveRc && (
+                        <div>
+                          <dt className="font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
+                            LiveRC heat
+                          </dt>
+                          <dd className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
+                            {session.liveRc.event ? `${session.liveRc.event.title} — ` : ""}
+                            {session.liveRc.label}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
                   </li>
                 ))}
               </ul>
@@ -96,4 +117,14 @@ function formatKind(kind: Session["kind"]): string {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatTimingProvider(provider: Session["timingProvider"]): string {
+  switch (provider) {
+    case "LIVE_RC":
+      return "LiveRC timing feed";
+    case "MANUAL":
+    default:
+      return "Manual entry";
+  }
 }

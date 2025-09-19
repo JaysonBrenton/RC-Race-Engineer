@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./.tmp/test-dist",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "typeRoots": ["./types"],
+    "types": ["custom-node"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@prisma/client": ["./src/stubs/prisma-client"]
+    }
+  },
+  "include": ["src/core/**/*.ts", "src/core/**/*.tsx", "src/stubs/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules"]
+}
