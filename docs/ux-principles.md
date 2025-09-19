@@ -1,4 +1,4 @@
-# RC Race Engineer — UX Principles
+# The RC Racing Engineer — UX Principles
 
 ## 1) Glanceable under pressure
 - Large, high-contrast summaries with drill-down. Critical info must be readable from 1–2m distance.
