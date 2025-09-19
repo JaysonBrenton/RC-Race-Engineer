@@ -12,4 +12,4 @@ Honour performance budgets (UI P50 ≤ 300 ms, P95 ≤ 800 ms; API reads P95 ≤
 
 ## Acceptance checklist
 
-- Prisma migrations + VM apply commands + ExecStartPre migrate + /api/ready fails if pending
+- Database: If schema changes, PR must include Prisma migration files and a release note with the VM apply commands. Service must run prisma migrate deploy on start (ExecStartPre). /api/ready must fail while migrations are pending.
