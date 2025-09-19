@@ -23,7 +23,7 @@ export default async function Home() {
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-12">
         <header className="space-y-4">
-          <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">RC Race Engineer</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">The RC Racing Engineer</p>
           <h1 className="text-3xl font-semibold sm:text-4xl">Session control tower</h1>
           <p className="max-w-2xl text-base text-neutral-600 dark:text-neutral-400">
             Create race-weekend sessions and confirm the ingest pipeline before wiring external timing feeds. Once a

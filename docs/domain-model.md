@@ -1,4 +1,4 @@
-# RC Race Engineer — Domain Model (Draft)
+# The RC Racing Engineer — Domain Model (Draft)
 
 This document is the source of truth for entities, relations, and invariants. PRs that change the model must update this document and follow the **Model Change Protocol** in `AGENTS.md`.
 

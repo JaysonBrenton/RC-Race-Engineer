@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RC Race Engineer | Live telemetry intelligence for every stint",
+  title: "The RC Racing Engineer | Live telemetry intelligence for every stint",
   description:
-    "RC Race Engineer synchronizes telemetry, strategy calls, and setup notes so crews can make confident decisions in real time.",
+    "The RC Racing Engineer synchronizes telemetry, strategy calls, and setup notes so crews can make confident decisions in real time.",
 };
 
 export default function RootLayout({

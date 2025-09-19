@@ -1,4 +1,4 @@
-# RC Race Engineer — Design Principles
+# The RC Racing Engineer — Design Principles
 
 This is the architectural north star. All code and PRs (human or agent) must align with these principles.
 
