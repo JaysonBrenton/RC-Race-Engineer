@@ -6,6 +6,7 @@ node_modules/
 web/.next/
 web/.turbo/
 web/out/
+web/.tmp/
 
 # Editor/OS
 .DS_Store

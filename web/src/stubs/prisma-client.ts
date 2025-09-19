@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-namespace */
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
-const requireModule = createRequire(import.meta.url);
+
+const requireModule = createRequire(__filename);
+
 export namespace Prisma {
+  export type TimingProvider = "MANUAL" | "LIVE_RC";
+
   export type Session = {
     id: string;
     name: string;
@@ -13,8 +17,71 @@ export namespace Prisma {
     scheduledEnd: Date | null;
     actualStart: Date | null;
     actualEnd: Date | null;
+    timingProvider: TimingProvider;
+    liveRcHeatId: string | null;
     createdAt: Date;
     updatedAt: Date;
+    liveRcHeat?: LiveRcHeat | null;
+  };
+
+  export type LiveRcEvent = {
+    id: string;
+    externalEventId: number;
+    title: string;
+    trackName: string | null;
+    facility: string | null;
+    city: string | null;
+    region: string | null;
+    country: string | null;
+    timeZone: string | null;
+    startTime: Date | null;
+    endTime: Date | null;
+    website: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
+  export type LiveRcClass = {
+    id: string;
+    eventId: string;
+    externalClassId: number;
+    name: string;
+    description: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    event?: LiveRcEvent;
+  };
+
+  export type LiveRcHeat = {
+    id: string;
+    classId: string;
+    externalHeatId: number;
+    label: string;
+    round: number | null;
+    attempt: number | null;
+    scheduledStart: Date | null;
+    durationSeconds: number | null;
+    status: string | null;
+    liveStreamUrl: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    class?: LiveRcClass & { event?: LiveRcEvent };
+  };
+
+  export type SessionInclude = {
+    liveRcHeat?:
+      | boolean
+      | {
+          include?: {
+            class?:
+              | boolean
+              | {
+                  include?: {
+                    event?: boolean;
+                  };
+                };
+          };
+        };
   };
 
   export interface PrismaClientOptions {
@@ -24,11 +91,13 @@ export namespace Prisma {
 
 interface SessionCreateArgs {
   data: Record<string, any>;
+  include?: Prisma.SessionInclude;
 }
 
 interface SessionFindManyArgs {
   orderBy: { createdAt: "asc" | "desc" };
   take?: number;
+  include?: Prisma.SessionInclude;
 }
 
 interface ClientImplementation {
@@ -51,12 +120,15 @@ class InMemoryPrismaClient implements ClientImplementation {
         description: (args.data.description ?? null) as string | null,
         kind: (args.data.kind ?? "OTHER") as Prisma.Session["kind"],
         status: (args.data.status ?? "SCHEDULED") as Prisma.Session["status"],
-        scheduledStart: args.data.scheduledStart ?? null,
-        scheduledEnd: args.data.scheduledEnd ?? null,
-        actualStart: args.data.actualStart ?? null,
-        actualEnd: args.data.actualEnd ?? null,
+        scheduledStart: (args.data.scheduledStart ?? null) as Date | null,
+        scheduledEnd: (args.data.scheduledEnd ?? null) as Date | null,
+        actualStart: (args.data.actualStart ?? null) as Date | null,
+        actualEnd: (args.data.actualEnd ?? null) as Date | null,
+        timingProvider: (args.data.timingProvider ?? "MANUAL") as Prisma.TimingProvider,
+        liveRcHeatId: (args.data.liveRcHeatId ?? null) as string | null,
         createdAt: now,
         updatedAt: now,
+        liveRcHeat: (args.data.liveRcHeat ?? null) as Prisma.LiveRcHeat | null,
       };
       this.sessions.unshift(record);
       return structuredClone(record);
@@ -81,9 +153,11 @@ class InMemoryPrismaClient implements ClientImplementation {
   }
 }
 
-function loadRealPrismaClient(): any | null {
+function loadRealPrismaClient(): (new (options?: Prisma.PrismaClientOptions) => ClientImplementation) | null {
   try {
-    const real = requireModule("@prisma/client");
+    const real = requireModule("@prisma/client") as {
+      PrismaClient?: new (options?: Prisma.PrismaClientOptions) => ClientImplementation;
+    };
     return real?.PrismaClient ?? null;
   } catch {
     return null;

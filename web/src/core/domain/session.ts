@@ -15,6 +15,43 @@ export const SESSION_STATUSES = ["SCHEDULED", "LIVE", "COMPLETE", "CANCELLED"] a
 
 export type SessionStatus = (typeof SESSION_STATUSES)[number];
 
+export const TIMING_PROVIDERS = ["MANUAL", "LIVE_RC"] as const;
+
+export type TimingProvider = (typeof TIMING_PROVIDERS)[number];
+
+export interface SessionLiveRcMetadata {
+  heatId: string;
+  heatExternalId: number;
+  label: string;
+  round: number | null;
+  attempt: number | null;
+  scheduledStart: string | null;
+  durationSeconds: number | null;
+  status: string | null;
+  liveStreamUrl: string | null;
+  class:
+    | {
+        id: string;
+        externalClassId: number;
+        name: string;
+      }
+    | null;
+  event: {
+    id: string;
+    externalEventId: number;
+    title: string;
+    trackName: string | null;
+    facility: string | null;
+    city: string | null;
+    region: string | null;
+    country: string | null;
+    timeZone: string | null;
+    startTime: string | null;
+    endTime: string | null;
+    website: string | null;
+  } | null;
+}
+
 export interface Session {
   id: string;
   name: string;
@@ -25,6 +62,8 @@ export interface Session {
   scheduledEnd: string | null;
   actualStart: string | null;
   actualEnd: string | null;
+  timingProvider: TimingProvider;
+  liveRc: SessionLiveRcMetadata | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,6 +74,8 @@ export interface CreateSessionInput {
   kind: SessionKind;
   scheduledStart?: string | null;
   scheduledEnd?: string | null;
+  timingProvider?: TimingProvider;
+  liveRcHeatId?: string | null;
 }
 
 export function isSessionKind(value: string): value is SessionKind {
@@ -43,6 +84,10 @@ export function isSessionKind(value: string): value is SessionKind {
 
 export function isSessionStatus(value: string): value is SessionStatus {
   return (SESSION_STATUSES as readonly string[]).includes(value);
+}
+
+export function isTimingProvider(value: string): value is TimingProvider {
+  return (TIMING_PROVIDERS as readonly string[]).includes(value);
 }
 
 export class InvalidSessionInputError extends Error {
@@ -93,6 +138,31 @@ export function validateCreateSessionInput(payload: unknown): CreateSessionInput
     issues.push("scheduledEnd must be after scheduledStart");
   }
 
+  let timingProvider: TimingProvider = "MANUAL";
+  if (typeof data.timingProvider === "string") {
+    const candidate = data.timingProvider.toUpperCase();
+    if (isTimingProvider(candidate)) {
+      timingProvider = candidate;
+    } else {
+      issues.push("timingProvider must be MANUAL or LIVE_RC");
+    }
+  } else if (data.timingProvider != null) {
+    issues.push("timingProvider must be a string when provided");
+  }
+
+  let liveRcHeatId: string | null = null;
+  if (data.liveRcHeatId != null) {
+    if (typeof data.liveRcHeatId !== "string" || data.liveRcHeatId.trim().length === 0) {
+      issues.push("liveRcHeatId must be a non-empty string when provided");
+    } else {
+      liveRcHeatId = data.liveRcHeatId.trim();
+    }
+  }
+
+  if (timingProvider === "LIVE_RC" && !liveRcHeatId) {
+    issues.push("liveRcHeatId is required when timingProvider is LIVE_RC");
+  }
+
   if (issues.length > 0 || !isSessionKind(kind)) {
     throw new InvalidSessionInputError(issues);
   }
@@ -103,6 +173,8 @@ export function validateCreateSessionInput(payload: unknown): CreateSessionInput
     kind,
     scheduledStart,
     scheduledEnd,
+    timingProvider,
+    liveRcHeatId,
   };
 }
 
