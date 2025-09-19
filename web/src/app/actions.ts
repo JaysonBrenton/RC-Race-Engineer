@@ -10,7 +10,10 @@ export interface ActionResult {
   issues?: string[];
 }
 
-export async function createSessionAction(formData: FormData): Promise<ActionResult> {
+export async function createSessionAction(
+  _prevState: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   const payload = {
     name: formData.get("name"),
     description: formData.get("description"),
