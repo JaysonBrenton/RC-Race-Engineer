@@ -1,3 +1,3 @@
-# RC Race Engineer
+# The RC Racing Engineer
 
-Fresh start. This repo contains the web app and related tooling for the RC Race Engineer project.
+Fresh start. This repo contains the web app and related tooling for The RC Racing Engineer project.
