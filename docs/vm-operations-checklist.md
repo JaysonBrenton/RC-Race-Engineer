@@ -34,7 +34,8 @@ npx prisma generate
 ## 4. Apply database migrations (only when needed)
 ```bash
 # From the repository root on the VM
-cd /path/to/RC-Race-Engineer
+cd /home/jayson/Development/RCRaceEngineer
+cd web
 npx prisma migrate deploy
 ```
 Include any seeding or rollback steps the author provided.
