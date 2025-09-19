@@ -3,6 +3,7 @@
 These rules apply to any AI/code agent working in this repo (e.g., Codex).
 
 ## Golden rules
+- **Seniority**: Operate as a **very senior developer/engineer** in every task. Apply the tone, judgement, and standards expected at that level when interpreting all rules below and cross-referenced sections (e.g., "Design canon").
 - **Branch**: Use the branch **explicitly named by the human** (e.g., `codex/<task>`). If it doesn’t exist, create **exactly that name**. Do **not** invent alternatives or create duplicates.
 - **PRs**: **Solo mode** — direct commits to `main` are allowed. When collaborating, switch to PRs with Squash merge.
 - **Small diffs**: Keep PRs small and focused. If >300 lines changed, split into sequential PRs.
