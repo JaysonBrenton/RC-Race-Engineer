@@ -13,6 +13,17 @@ declare module "node:crypto" {
   export function randomUUID(): string;
 }
 
+declare module "node:fs" {
+  export type Dirent = {
+    name: string;
+    isDirectory(): boolean;
+  };
+
+  export const promises: {
+    readdir(path: string, options: { withFileTypes: true }): Promise<Dirent[]>;
+  };
+}
+
 declare module "node:module" {
   export interface NodeModule {}
   export type NodeRequire = (id: string) => unknown;
@@ -37,5 +48,6 @@ declare const __filename: string;
 
 declare const process: {
   env: Record<string, string | undefined>;
+  cwd(): string;
   uptime(): number;
 };

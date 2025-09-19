@@ -14,11 +14,20 @@ These endpoints allow external monitors to query process and dependency health.
 - Does **not** assert that downstream dependencies are ready.
 
 ## `GET /api/ready`
+When all migrations are applied, the endpoint returns the detailed readiness document:
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `status` | `"ready" \| "degraded"` | `"ready"` when all checks pass, `"degraded"` otherwise. |
 | `timestamp` | `string` | ISO-8601 timestamp at evaluation. |
 | `checks` | `Array<ReadinessCheck>` | Detailed result per dependency. |
+
+If Prisma migrations are pending the response is:
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `ok` | `false` | Indicates the service is not ready. |
+| `reason` | `"DB_NOT_MIGRATED"` | Downstream consumers should run `prisma migrate deploy`. |
 
 ### `ReadinessCheck`
 | Property | Type | Description |
@@ -29,8 +38,9 @@ These endpoints allow external monitors to query process and dependency health.
 | `durationMs` | `number` | Probe duration in milliseconds. |
 
 ### Semantics
-- The database probe runs `SELECT 1` against Postgres via Prisma.
+- The database probe runs `SELECT 1` against Postgres via Prisma when migrations are current.
 - Failures leave the service in `"degraded"` with details explaining the failure.
+- Pending migrations block readiness and respond with `503` and `{ ok: false, reason: "DB_NOT_MIGRATED" }`.
 
 ## `GET /api/version`
 | Property | Type | Description |
