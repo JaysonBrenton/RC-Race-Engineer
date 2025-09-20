@@ -52,7 +52,8 @@ export function DemoTelemetryPanel({ session }: { session: Session | null }) {
         </button>
         <p className="text-xs text-neutral-500 dark:text-neutral-500">
           Payloads respect the validation schema (ISO timestamps, bounded throttle/brake). Inspect the Network panel or run curl
-          against `/api/sessions/{id}/events` to wire up your own source.
+          against <code className="text-xs font-mono text-neutral-700 dark:text-neutral-300">/api/sessions/{"{id}"}/events</code> to
+          wire up your own source.
         </p>
       </div>
     </section>
