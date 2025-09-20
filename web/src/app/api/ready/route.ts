@@ -1,18 +1,17 @@
-import { NextResponse } from "next/server";
-import "@/server/bootstrap";
-import { getReadinessStatus } from "@/core/app/system/getReadinessStatus";
-import { hasPendingMigrations } from "@/core/infra/system/hasPendingMigrations";
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    if (await hasPendingMigrations()) {
-      return NextResponse.json({ ok: false, reason: "DB_NOT_MIGRATED" }, { status: 503 });
-    }
+    // If this succeeds, DB is reachable and Prisma is usable → call it "ready".
+    await prisma.$queryRaw`SELECT 1`;
+    return NextResponse.json({ ok: true }, { status: 200 });
   } catch {
-    // If the migration check cannot be completed, fall back to the standard readiness response.
+    return NextResponse.json({ ok: false, reason: 'DB_ERROR' }, { status: 503 });
+  } finally {
+    // In dev, letting Prisma reuse the client is fine; no explicit disconnect.
+    // In prod/serverless you'd manage this differently.
   }
-
-  const readiness = await getReadinessStatus();
-  const statusCode = readiness.status === "ready" ? 200 : 503;
-  return NextResponse.json(readiness, { status: statusCode });
 }

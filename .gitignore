@@ -11,3 +11,4 @@ web/.tmp/
 # Editor/OS
 .DS_Store
 .vscode/
+.env
