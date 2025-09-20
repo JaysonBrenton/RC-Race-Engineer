@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 
 import { LoginForm } from "./LoginForm";
+import { normalizeRedirectTarget } from "./redirect";
 
 export const metadata: Metadata = {
   title: "Sign in | RC Racing Engineer",
 };
 
 export default function LoginPage({ searchParams }: { searchParams?: { redirect?: string } }) {
-  const redirectTo = searchParams?.redirect ?? "/";
+  const redirectTo = normalizeRedirectTarget(searchParams?.redirect);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface px-6 py-12">
