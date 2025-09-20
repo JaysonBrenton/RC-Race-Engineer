@@ -9,7 +9,16 @@
 
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 interface Toast {
   id: number;
@@ -24,7 +33,7 @@ export interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const notify = useCallback((toast: Omit<Toast, "id">) => {
@@ -34,19 +43,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const timerRegistryRef = useRef<ToastTimerRegistry | null>(null);
+  if (!timerRegistryRef.current) {
+    timerRegistryRef.current = createToastTimerRegistry((id) => {
+      setToasts((current) => current.filter((item) => item.id !== id));
+    });
+  }
+
   useEffect(() => {
-    if (toasts.length === 0) return;
-    const timers = toasts.map((toast) =>
-      setTimeout(() => {
-        setToasts((current) => current.filter((item) => item.id !== toast.id));
-      }, 5000),
-    );
-    return () => {
-      for (const timer of timers) {
-        clearTimeout(timer);
-      }
-    };
+    timerRegistryRef.current?.sync(toasts);
   }, [toasts]);
+
+  useEffect(() => {
+    const registry = timerRegistryRef.current;
+    return () => {
+      registry?.dispose();
+    };
+  }, []);
 
   const value = useMemo(() => ({ notify }), [notify]);
 
@@ -76,6 +89,48 @@ export function useToast() {
     throw new Error("useToast must be used within a ToastProvider");
   }
   return context;
+}
+
+export interface ToastTimerRegistry {
+  sync(toasts: Toast[]): void;
+  dispose(): void;
+}
+
+export function createToastTimerRegistry(
+  onExpire: (id: number) => void,
+  dismissAfterMs = 5000,
+): ToastTimerRegistry {
+  const timers = new Map<number, ReturnType<typeof setTimeout>>();
+
+  return {
+    sync(toasts) {
+      const activeIds = new Set(toasts.map((toast) => toast.id));
+
+      for (const [id, handle] of timers) {
+        if (!activeIds.has(id)) {
+          clearTimeout(handle);
+          timers.delete(id);
+        }
+      }
+
+      for (const toast of toasts) {
+        if (timers.has(toast.id)) continue;
+
+        const handle = setTimeout(() => {
+          timers.delete(toast.id);
+          onExpire(toast.id);
+        }, dismissAfterMs);
+
+        timers.set(toast.id, handle);
+      }
+    },
+    dispose() {
+      for (const handle of timers.values()) {
+        clearTimeout(handle);
+      }
+      timers.clear();
+    },
+  };
 }
 
 function variantClass(variant: Toast["variant"]) {

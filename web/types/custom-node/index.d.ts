@@ -4,7 +4,23 @@ export = assertStrict;
 }
 
 declare module "node:test" {
-  export type TestFn = (t: unknown) => Promise<void> | void;
+  export interface MockTimers {
+    enable(options?: { apis?: string[] }): void;
+    tick(milliseconds: number): void;
+    reset(): void;
+  }
+
+  export interface MockTracker {
+    timers: MockTimers;
+  }
+
+  export const mock: MockTracker;
+
+  export interface TestContext {
+    mock: MockTracker;
+  }
+
+  export type TestFn = (t: TestContext) => Promise<void> | void;
   export default function test(name: string, fn: TestFn): Promise<void>;
   export function test(name: string, fn: TestFn): Promise<void>;
 }

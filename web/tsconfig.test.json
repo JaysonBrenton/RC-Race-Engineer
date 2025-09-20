@@ -11,6 +11,7 @@
     "baseUrl": ".",
     "typeRoots": ["./types"],
     "types": ["custom-node"],
+    "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"],
       "@prisma/client": ["./src/stubs/prisma-client"],
@@ -18,10 +19,12 @@
     }
   },
   "include": [
+    "src/app/_components/ToastProvider.tsx",
     "src/core/**/*.ts",
     "src/core/**/*.tsx",
     "src/stubs/**/*.d.ts",
-    "test/**/*.ts"
+    "test/**/*.ts",
+    "test/**/*.tsx"
   ],
   "exclude": ["node_modules"]
 }
