@@ -1,3 +1,13 @@
+/**
+ * File: web/src/app/_components/TelemetrySummaryPanel.tsx
+ * Purpose: Presents aggregate telemetry metrics alongside the timeline so the
+ *          crew can confirm ingest quality at a glance.
+ * Notable behaviours: Displays summary counts/averages from
+ *                    `summariseTelemetry`, swaps to an empty state when no
+ *                    samples exist, and reuses semantic accent styling per
+ *                    metric.
+ */
+
 import type { TelemetrySummary } from "@/core/app/telemetry/summariseTelemetry";
 
 export function TelemetrySummaryPanel({ summary }: { summary: TelemetrySummary }) {

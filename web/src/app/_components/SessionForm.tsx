@@ -1,3 +1,13 @@
+/**
+ * File: web/src/app/_components/SessionForm.tsx
+ * Purpose: Client-side form for scheduling telemetry sessions from the command
+ *          centre interface.
+ * Notable behaviours: Invokes `createSessionAction` via `useFormState`,
+ *                    surfaces success and error notifications through the
+ *                    toast provider, and resets the form/timing provider after
+ *                    successful submission.
+ */
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";

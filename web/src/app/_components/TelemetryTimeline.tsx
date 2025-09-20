@@ -1,3 +1,12 @@
+/**
+ * File: web/src/app/_components/TelemetryTimeline.tsx
+ * Purpose: Renders an inline SVG chart for a session's telemetry samples inside
+ *          the command centre dashboard.
+ * Notable behaviours: Derives chart geometry with `useMemo`, builds multi-signal
+ *                    paths for speed/throttle/brake, and displays an empty state
+ *                    when no samples are available.
+ */
+
 "use client";
 
 import { useMemo } from "react";
