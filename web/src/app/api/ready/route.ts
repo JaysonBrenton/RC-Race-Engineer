@@ -1,17 +1,20 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import '@/server/bootstrap';
+import { getReadinessStatus } from '@/core/app/system/getReadinessStatus';
+
+export const dynamic = 'force-dynamic';
+
+const CACHE_HEADERS = {
+  'cache-control': 'no-store',
+};
 
 export async function GET() {
-  try {
-    // If this succeeds, DB is reachable and Prisma is usable → call it "ready".
-    await prisma.$queryRaw`SELECT 1`;
-    return NextResponse.json({ ok: true }, { status: 200 });
-  } catch {
-    return NextResponse.json({ ok: false, reason: 'DB_ERROR' }, { status: 503 });
-  } finally {
-    // In dev, letting Prisma reuse the client is fine; no explicit disconnect.
-    // In prod/serverless you'd manage this differently.
-  }
+  const readiness = await getReadinessStatus();
+  const status = readiness.status === 'ready' ? 200 : 503;
+
+  return NextResponse.json(readiness, {
+    status,
+    headers: CACHE_HEADERS,
+  });
 }
