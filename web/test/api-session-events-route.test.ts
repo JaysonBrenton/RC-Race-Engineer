@@ -122,6 +122,17 @@ test("GET /api/sessions/:id/events validates limit query", async () => {
   assert.deepEqual(await response.json(), { error: "limit must be a positive number" });
 });
 
+test("GET /api/sessions/:id/events rejects limit values above the cap", async () => {
+  registerSessionStub();
+  registerTelemetryStub();
+
+  const request = new Request("http://localhost/api/sessions/session-1/events?limit=999");
+  const response = await GET(request, { params: { sessionId: "session-1" } });
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), { error: "limit must be less than or equal to 500" });
+});
+
 test("GET /api/sessions/:id/events returns 404 when session missing", async () => {
   registerSessionStub({
     async getById() {

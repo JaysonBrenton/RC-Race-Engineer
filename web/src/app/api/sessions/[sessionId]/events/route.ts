@@ -11,14 +11,25 @@ import { getSession } from "@/core/app/sessions/getSession";
 import { listTelemetryForSession } from "@/core/app/telemetry/listTelemetryForSession";
 import { recordTelemetryEvent } from "@/core/app/telemetry/recordTelemetryEvent";
 
+const MAX_LIMIT = 500;
+
 export async function GET(request: Request, { params }: { params: { sessionId: string } }) {
   const { sessionId } = params;
   const url = new URL(request.url);
   const limitParam = url.searchParams.get("limit");
   const limit = limitParam ? Number.parseInt(limitParam, 10) : undefined;
 
-  if (limitParam && (Number.isNaN(limit) || limit! <= 0)) {
-    return NextResponse.json({ error: "limit must be a positive number" }, { status: 400 });
+  if (limitParam) {
+    if (Number.isNaN(limit) || limit <= 0) {
+      return NextResponse.json({ error: "limit must be a positive number" }, { status: 400 });
+    }
+
+    if (limit > MAX_LIMIT) {
+      return NextResponse.json(
+        { error: `limit must be less than or equal to ${MAX_LIMIT}` },
+        { status: 400 },
+      );
+    }
   }
 
   try {
