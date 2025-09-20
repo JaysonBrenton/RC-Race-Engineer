@@ -2,90 +2,51 @@
 
 This document is the source of truth for entities, relations, and invariants. PRs that change the model must update this document and follow the **Model Change Protocol** in `AGENTS.md`.
 
-## Entities (first pass)
-- **Team** *(optional if single-tenant)*
-- **User**
-- **Driver**
-- **Car**
-- **Track**
-- **Event** (e.g., race weekend)
-- **Session** (practice/qualifying/race)
-- **TimingProvider** (enum representing telemetry/timing source)
-- **LiveRcEvent** (external event metadata)
-- **LiveRcClass** (class/category within a LiveRC event)
-- **LiveRcHeat** (specific round/heat published by LiveRC)
-- **LiveRcEntry** (competitor roster from LiveRC)
-- **LiveRcResult** (per-heat finishing data from LiveRC)
-- **Lap**
-- **Stint**
-- **TelemetrySample** (time-series metrics per car)
-- **SetupSheet** (baseline + adjustments)
-- **WeatherSnapshot**
-- **TyreSet**
-- **Incident** (flags, notes, steward events)
-- **Annotation** (engineer notes tied to time/lap)
+## Implemented entities (v0.2)
+- **Session** — lifecycle container for telemetry, optionally linked to a LiveRC heat. Key attributes: `id`, `name`, `kind`,
+  `status`, `scheduledStart`, `scheduledEnd`, `actualStart`, `actualEnd`, `timingProvider`, `liveRcHeatId`, timestamps.
+- **TelemetrySample** — raw time-series capture for the control tower. Attributes: `id`, `sessionId`, `recordedAt`,
+  `speedKph`, `throttlePct`, `brakePct`, `rpm`, `gear`, `createdAt`.
+- **LiveRcEvent/Class/Heat** — metadata mirrors the LiveRC hierarchy so sessions can bind to authoritative heats. Key
+  invariants: external ids unique per scope, schedules respect parent event ranges.
+- **LiveRcEntry/Result** — roster and finishing data for heat reporting (ingestion stubs only).
 
-## Relationships (rough)
+### Entity relationship diagram
+
 ```mermaid
-graph TD
-  Team --< Users
-  Team --< Cars
-  Team --< Drivers
-  Event --> Track
-  Event --< Sessions
-  TimingProvider --> Session
-  LiveRcEvent --< LiveRcClass
-  LiveRcClass --< LiveRcHeat
-  LiveRcClass --< LiveRcEntry
-  LiveRcHeat --< LiveRcResult
-  LiveRcHeat --> Session
-  LiveRcResult --> LiveRcEntry
-  LiveRcHeat --> LiveRcClass
-  LiveRcClass --> LiveRcEvent
-  Session --< Stints
-  Session --< Laps
-  Stint --> Car
-  Stint --> Driver
-  Lap --> Session
-  Lap --> Car
-  TelemetrySample --> Session
-  TelemetrySample --> Car
-  TelemetrySample --> Driver
-  TelemetrySample --> Lap
-  SetupSheet --> Car
-  SetupSheet --> Session
-  WeatherSnapshot --> Session
-  TyreSet --> Session
-  TyreSet --> Car
-  TyreSet --> Driver
-  Incident --> Session
-  Incident --> Lap
-  Annotation --> Session
-  Annotation --> Lap
+erDiagram
+  Session ||--o{ TelemetrySample : records
+  Session ||--o| LiveRcHeat : binds
+  LiveRcHeat }o--|| LiveRcClass : groups
+  LiveRcClass }o--|| LiveRcEvent : hosted_at
+  LiveRcHeat ||--o{ LiveRcResult : produces
+  LiveRcClass ||--o{ LiveRcEntry : fields
+  LiveRcResult }o--|| LiveRcEntry : awarded_to
 ```
 
+### Future entities (roadmap)
+- **Team**, **User**, **Driver**, **Car**, **Track**, **Lap**, **Stint**, **SetupSheet**, **WeatherSnapshot**, **TyreSet**,
+  **Incident**, **Annotation** — defined in the long-term model but not yet implemented. Each addition must update this document
+  per the Model Change Protocol.
+
 ## Attributes & invariants
-- **Team**: `id`, `name`, `primaryColor`, `secondaryColor`. *Invariant*: name unique per deployment.
-- **User**: `id`, `teamId`, `email`, `role` (`engineer`, `strategist`, `viewer`). *Invariant*: `(teamId, email)` unique; role constrained to allow lists.
-- **Driver**: `id`, `teamId`, `code`, `fullName`, `country`. *Invariant*: `code` unique per team; drivers archived rather than deleted.
-- **Car**: `id`, `teamId`, `identifier` (e.g., 63), `chassis`, `powerUnit`. *Invariant*: identifier unique within team per season.
-- **Track**: `id`, `name`, `country`, `layoutVersion`, `lengthKm`, `turnCount`, `timezone`. *Invariant*: `(name, layoutVersion)` unique.
-- **Event**: `id`, `trackId`, `season`, `round`, `name`, `startDate`, `endDate`. *Invariant*: `(season, round)` unique; `startDate <= endDate`.
-- **Session**: `id`, `name`, `description?`, `eventId?`, `kind` (`FP1`, `FP2`, `FP3`, `Practice`, `Qualifying`, `Race`, `Test`, `Other`), `status` (`Scheduled`, `Live`, `Complete`, `Cancelled`), `scheduledStart?`, `scheduledEnd?`, `actualStart?`, `actualEnd?`, `createdAt`, `updatedAt`. *Invariant*: `scheduledEnd` ≥ `scheduledStart` when both present; actual times fall within the scheduled range when provided.
-- **TimingProvider**: enum of `Manual`, `LiveRc`. *Invariant*: `LiveRc` sessions must link to `LiveRcHeat` metadata.
-- **LiveRcEvent**: `id`, `externalEventId`, `title`, `trackName`, `facility?`, `city?`, `region?`, `country?`, `timeZone?`, `startTime?`, `endTime?`, `website?`, `createdAt`, `updatedAt`. *Invariant*: `externalEventId` unique; date range respects `startTime <= endTime` when both present.
-- **LiveRcClass**: `id`, `eventId`, `externalClassId`, `name`, `description?`, `createdAt`, `updatedAt`. *Invariant*: combination `(eventId, externalClassId)` unique.
-- **LiveRcHeat**: `id`, `classId`, `externalHeatId`, `label`, `round?`, `attempt?`, `scheduledStart?`, `durationSeconds?`, `status?`, `liveStreamUrl?`, `createdAt`, `updatedAt`. *Invariant*: `(classId, externalHeatId)` unique; heat schedules must fall within the parent event window when known.
-- **LiveRcEntry**: `id`, `classId`, `externalEntryId`, `driverName`, `carNumber?`, `transponder?`, `vehicle?`, `sponsor?`, `hometownCity?`, `hometownRegion?`, `createdAt`, `updatedAt`. *Invariant*: `(classId, externalEntryId)` unique.
-- **LiveRcResult**: `id`, `heatId`, `entryId`, `externalResultId`, `finishPosition?`, `lapsCompleted?`, `totalTimeMs?`, `fastLapMs?`, `intervalMs?`, `status?`, `createdAt`, `updatedAt`. *Invariant*: `(heatId, entryId)` unique; `finishPosition` positive when present.
-- **Stint**: `id`, `sessionId`, `carId`, `driverId`, `tyreSetId`, `startLap`, `endLap`, `compound`, `fuelStartKg`, `fuelEndKg`. *Invariant*: `startLap <= endLap`; stints for same car cannot overlap laps.
-- **Lap**: `id`, `sessionId`, `carId`, `lapNumber`, `driverId`, `timeMs`, `isInLap`, `isOutLap`, `isPitLap`, `sector1Ms`, `sector2Ms`, `sector3Ms`, `trackStatus`. *Invariant*: lap numbers contiguous per session+car; sector sums within ±10ms of `timeMs`.
-- **TelemetrySample**: `id`, `sessionId`, `carId?`, `driverId?`, `lapId?`, `recordedAt`, `speedKph?`, `throttlePct?`, `brakePct?`, `rpm?`, `gear?`, `createdAt`. *Invariant*: timestamps monotonic per session+car; throttle/brake 0–100; gear in allowed set.
-- **SetupSheet**: `id`, `sessionId`, `carId`, `baselineVersion`, `wingAngle`, `rideHeight`, `camber`, `toe`, `suspension`, `notes`, `createdBy`. *Invariant*: one active baseline per session+car; values within engineering bounds (see appendix).
-- **WeatherSnapshot**: `id`, `sessionId`, `timestamp`, `airTempC`, `trackTempC`, `humidityPct`, `pressureHpa`, `windSpeedKph`, `windDirectionDeg`, `weatherCondition`. *Invariant*: timestamps align with telemetry sampling frequency.
-- **TyreSet**: `id`, `sessionId`, `carId`, `compound`, `ageLaps`, `isNew`, `serial`, `assignedAt`, `returnedAt?`. *Invariant*: `serial` unique per event; tyre set cannot be active in overlapping stints.
-- **Incident**: `id`, `sessionId`, `lapId?`, `timecode`, `flag`, `description`, `severity`. *Invariant*: `flag` from controlled vocabulary; severity used for alerting thresholds.
-- **Annotation**: `id`, `sessionId`, `lapId?`, `timecode`, `authorId`, `category`, `message`, `visibility`. *Invariant*: visibility in {team, car, personal}; author must belong to same team.
+- **Session**: `id`, `name`, `description?`, `kind`, `status`, `scheduledStart?`, `scheduledEnd?`, `actualStart?`, `actualEnd?`,
+  `timingProvider`, `liveRcHeatId?`, `createdAt`, `updatedAt`. *Invariants*: `scheduledEnd` ≥ `scheduledStart` when present;
+  `timingProvider = LIVE_RC` requires `liveRcHeatId`.
+- **TelemetrySample**: `id`, `sessionId`, `recordedAt`, `speedKph?`, `throttlePct?`, `brakePct?`, `rpm?`, `gear?`, `createdAt`.
+  *Invariants*: validation schema clamps `speedKph` to ≤450, throttle/brake 0–100, RPM ≤30k, gear between -1 and 12.
+- **LiveRcEvent**: `id`, `externalEventId`, `title`, `trackName?`, `facility?`, `city?`, `region?`, `country?`, `timeZone?`,
+  `startTime?`, `endTime?`, `website?`, `createdAt`, `updatedAt`. *Invariant*: `externalEventId` unique; `startTime ≤ endTime`.
+- **LiveRcClass**: `id`, `eventId`, `externalClassId`, `name`, `description?`, timestamps. *Invariant*: `(eventId, externalClassId)`
+  unique.
+- **LiveRcHeat**: `id`, `classId`, `externalHeatId`, `label`, `round?`, `attempt?`, `scheduledStart?`, `durationSeconds?`,
+  `status?`, `liveStreamUrl?`, timestamps. *Invariant*: `(classId, externalHeatId)` unique; schedule contained in parent event.
+- **LiveRcEntry**: `id`, `classId`, `externalEntryId`, `driverName`, `carNumber?`, `transponder?`, `vehicle?`, `sponsor?`,
+  `hometownCity?`, `hometownRegion?`, timestamps. *Invariant*: `(classId, externalEntryId)` unique.
+- **LiveRcResult**: `id`, `heatId`, `entryId`, `externalResultId`, `finishPosition?`, `lapsCompleted?`, `totalTimeMs?`,
+  `fastLapMs?`, `intervalMs?`, `status?`, timestamps. *Invariant*: `(heatId, entryId)` unique; `finishPosition` positive when
+  present.
+- **Future entities** retain the invariants listed in the original draft and will be formalised alongside their implementations.
 
 ## Derived views & aggregates
 - **Session summary**: per car, aggregate fastest lap, stint average pace, total pit time, tyre usage.

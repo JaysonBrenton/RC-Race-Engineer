@@ -84,6 +84,18 @@ export namespace Prisma {
         };
   };
 
+  export type TelemetrySample = {
+    id: string;
+    sessionId: string;
+    recordedAt: Date;
+    speedKph: number | null;
+    throttlePct: number | null;
+    brakePct: number | null;
+    rpm: number | null;
+    gear: number | null;
+    createdAt: Date;
+  };
+
   export interface PrismaClientOptions {
     log?: ("query" | "info" | "warn" | "error")[];
   }
@@ -100,16 +112,37 @@ interface SessionFindManyArgs {
   include?: Prisma.SessionInclude;
 }
 
+interface SessionFindUniqueArgs {
+  where: { id: string };
+  include?: Prisma.SessionInclude;
+}
+
 interface ClientImplementation {
   session: {
     create(args: SessionCreateArgs): Promise<Prisma.Session>;
     findMany(args: SessionFindManyArgs): Promise<Prisma.Session[]>;
+    findUnique(args: SessionFindUniqueArgs): Promise<Prisma.Session | null>;
+  };
+  telemetrySample: {
+    create(args: TelemetryCreateArgs): Promise<Prisma.TelemetrySample>;
+    findMany(args: TelemetryFindManyArgs): Promise<Prisma.TelemetrySample[]>;
   };
   $queryRaw<T = unknown>(strings: TemplateStringsArray, ...values: unknown[]): Promise<T>;
 }
 
+interface TelemetryCreateArgs {
+  data: Record<string, any>;
+}
+
+interface TelemetryFindManyArgs {
+  where: { sessionId: string };
+  orderBy: { recordedAt: "asc" | "desc" };
+  take?: number;
+}
+
 class InMemoryPrismaClient implements ClientImplementation {
   private sessions: Prisma.Session[] = [];
+  private telemetry: Prisma.TelemetrySample[] = [];
 
   public session = {
     create: async (args: SessionCreateArgs): Promise<Prisma.Session> => {
@@ -142,6 +175,39 @@ class InMemoryPrismaClient implements ClientImplementation {
       });
       return sorted.slice(0, args.take ?? sorted.length).map((session) => structuredClone(session));
     },
+    findUnique: async (args: SessionFindUniqueArgs): Promise<Prisma.Session | null> => {
+      const session = this.sessions.find((item) => item.id === args.where.id) ?? null;
+      return session ? structuredClone(session) : null;
+    },
+  };
+
+  public telemetrySample = {
+    create: async (args: TelemetryCreateArgs): Promise<Prisma.TelemetrySample> => {
+      const now = new Date();
+      const sample: Prisma.TelemetrySample = {
+        id: randomUUID(),
+        sessionId: String(args.data.sessionId),
+        recordedAt: new Date(args.data.recordedAt ?? now),
+        speedKph: (args.data.speedKph ?? null) as number | null,
+        throttlePct: (args.data.throttlePct ?? null) as number | null,
+        brakePct: (args.data.brakePct ?? null) as number | null,
+        rpm: (args.data.rpm ?? null) as number | null,
+        gear: (args.data.gear ?? null) as number | null,
+        createdAt: now,
+      };
+      this.telemetry.push(sample);
+      return structuredClone(sample);
+    },
+    findMany: async (args: TelemetryFindManyArgs): Promise<Prisma.TelemetrySample[]> => {
+      const filtered = this.telemetry.filter((sample) => sample.sessionId === args.where.sessionId);
+      const sorted = filtered.sort((a, b) => {
+        if (args.orderBy.recordedAt === "asc") {
+          return a.recordedAt.getTime() - b.recordedAt.getTime();
+        }
+        return b.recordedAt.getTime() - a.recordedAt.getTime();
+      });
+      return sorted.slice(0, args.take ?? sorted.length).map((sample) => structuredClone(sample));
+    },
   };
 
   public async $queryRaw<T = unknown>(strings: TemplateStringsArray): Promise<T> {
@@ -170,6 +236,7 @@ export class PrismaClient implements ClientImplementation {
   private readonly impl: ClientImplementation;
 
   public readonly session: ClientImplementation["session"];
+  public readonly telemetrySample: ClientImplementation["telemetrySample"];
 
   constructor(options?: Prisma.PrismaClientOptions) {
     if (RealPrismaClient) {
@@ -178,6 +245,7 @@ export class PrismaClient implements ClientImplementation {
       this.impl = new InMemoryPrismaClient();
     }
     this.session = this.impl.session;
+    this.telemetrySample = this.impl.telemetrySample;
   }
 
   public $queryRaw<T = unknown>(strings: TemplateStringsArray, ...values: unknown[]): Promise<T> {

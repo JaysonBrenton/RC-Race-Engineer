@@ -41,6 +41,13 @@ const repository: SessionRepository = {
     });
     return sessions.map(mapSession);
   },
+  async getById(id) {
+    const session = await prisma.session.findUnique({
+      where: { id },
+      include: LIVE_RC_INCLUDE,
+    });
+    return session ? mapSession(session) : null;
+  },
 };
 
 // Immediately register this repository so that the application layer can

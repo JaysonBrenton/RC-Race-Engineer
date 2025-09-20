@@ -1,6 +1,6 @@
 declare module "node:assert/strict" {
-  import assert = require("assert");
-  export = assert;
+const assertStrict: typeof import("node:assert/strict");
+export = assertStrict;
 }
 
 declare module "node:test" {
@@ -25,10 +25,12 @@ declare module "node:fs" {
 }
 
 declare module "node:module" {
-  export interface NodeModule {}
+  export interface NodeModule {
+    id: string;
+  }
   export type NodeRequire = (id: string) => unknown;
   export function createRequire(filename: string | URL): NodeRequire;
-  const Module: any;
+  const Module: unknown;
   export default Module;
 }
 
