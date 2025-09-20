@@ -24,6 +24,7 @@ import { TelemetrySummaryPanel } from "./_components/TelemetrySummaryPanel";
 import { DemoTelemetryPanel } from "./_components/DemoTelemetryPanel";
 import { SignOutButton } from "./_components/SignOutButton";
 import { LiveRcHeatResultsChart } from "./_components/LiveRcHeatResultsChart";
+import { shouldLoadTelemetry } from "./telemetryLoadingGuard";
 
 const timeFormatter = new Intl.DateTimeFormat("en-GB", {
   dateStyle: "medium",
@@ -45,9 +46,13 @@ export default async function Home({ searchParams }: { searchParams?: { sessionI
   }
 
   const rawSessionId = searchParams?.sessionId;
-  const normalizedSessionId = Array.isArray(rawSessionId)
-    ? rawSessionId[0]?.trim() || null
-    : rawSessionId?.trim() || null;
+
+  // Keep the main-branch normalization logic (trim to string or null)
+  const normalizedSessionIdCandidate = Array.isArray(rawSessionId) ? rawSessionId[0] : rawSessionId;
+  const normalizedSessionId =
+    typeof normalizedSessionIdCandidate === "string" && normalizedSessionIdCandidate.trim().length > 0
+      ? normalizedSessionIdCandidate.trim()
+      : null;
 
   const sessionMatchingNormalized = normalizedSessionId
     ? sessions.find((session) => session.id === normalizedSessionId) ?? null
@@ -58,8 +63,15 @@ export default async function Home({ searchParams }: { searchParams?: { sessionI
 
   let samples: TelemetrySample[] = [];
   let samplesError: string | null = null;
-  const shouldLoadTelemetry = typeof normalizedSessionId === "string" && normalizedSessionId.length > 0;
-  if (shouldLoadTelemetry && selectedSessionId) {
+
+  // Use the imported guard from telemetryLoadingGuard (don't shadow it)
+  const allowTelemetryFetch = shouldLoadTelemetry({
+    selectedSessionId,
+    normalizedSessionId,
+    sessionMatchingNormalized,
+  });
+
+  if (allowTelemetryFetch && selectedSessionId) {
     try {
       samples = await listTelemetryForSession(selectedSessionId, { order: "asc" });
     } catch (error) {
