@@ -5,7 +5,7 @@
  */
 
 import { performance } from "node:perf_hooks";
-import { prisma } from "@/core/infra/db/prismaClient";
+import { getPrismaClient } from "@/core/infra/db/prismaClient";
 import type { ReadinessProbeResult } from "@/core/app/system/ports";
 import { registerReadinessDependencies } from "@/core/app/system/serviceLocator";
 
@@ -14,6 +14,7 @@ export async function databaseProbe(): Promise<ReadinessProbeResult> {
   try {
     // A lightweight `SELECT 1` ensures connectivity without impacting
     // production traffic or requiring table-level access.
+    const prisma = getPrismaClient();
     await prisma.$queryRaw`SELECT 1`;
     return {
       name: "database",

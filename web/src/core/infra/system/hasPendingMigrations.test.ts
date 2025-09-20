@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { promises as fs } from "node:fs";
 
-import { prisma } from "@/core/infra/db/prismaClient";
+import { getPrismaClient } from "@/core/infra/db/prismaClient";
 
 import { hasPendingMigrations } from "./hasPendingMigrations";
 
@@ -21,6 +21,7 @@ function patchFs(entries: DirentLike[]) {
 }
 
 function patchQueryRaw<T>(implementation: () => Promise<T>) {
+  const prisma = getPrismaClient();
   const original = prisma.$queryRaw;
   prisma.$queryRaw = (implementation as unknown) as typeof prisma.$queryRaw;
   return () => {

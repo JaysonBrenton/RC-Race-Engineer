@@ -6,13 +6,14 @@
  */
 
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/core/infra/db/prismaClient";
+import { getPrismaClient } from "@/core/infra/db/prismaClient";
 import type { CreateSessionInput, Session, SessionLiveRcMetadata, TimingProvider } from "@/core/domain/session";
 import type { SessionRepository } from "@/core/app/sessions/ports";
 import { registerSessionRepository } from "@/core/app/sessions/serviceLocator";
 
 const repository: SessionRepository = {
   async create(data: CreateSessionInput) {
+    const prisma = getPrismaClient();
     // Persist the session while letting Prisma coerce optional date fields into
     // nullable columns. We include LiveRC relations so the caller receives a
     // complete view immediately after creation.
@@ -32,6 +33,7 @@ const repository: SessionRepository = {
     return mapSession(created);
   },
   async list() {
+    const prisma = getPrismaClient();
     // Limit the result set to the latest 25 sessions to keep payload sizes
     // predictable for the API.
     const sessions = await prisma.session.findMany({
@@ -42,6 +44,7 @@ const repository: SessionRepository = {
     return sessions.map(mapSession);
   },
   async getById(id) {
+    const prisma = getPrismaClient();
     const session = await prisma.session.findUnique({
       where: { id },
       include: LIVE_RC_INCLUDE,

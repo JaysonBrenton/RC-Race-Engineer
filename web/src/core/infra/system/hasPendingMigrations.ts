@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { prisma } from "@/core/infra/db/prismaClient";
+import { getPrismaClient } from "@/core/infra/db/prismaClient";
 
 const MIGRATIONS_DIRECTORY = path.resolve(process.cwd(), "..", "prisma", "migrations");
 
@@ -36,6 +36,7 @@ async function readMigrationDirectories(): Promise<string[] | null> {
 }
 
 async function readAppliedMigrations(): Promise<AppliedMigrationRow[]> {
+  const prisma = getPrismaClient();
   try {
     return await prisma.$queryRaw<AppliedMigrationRow[]>`
       SELECT "migration_name"
