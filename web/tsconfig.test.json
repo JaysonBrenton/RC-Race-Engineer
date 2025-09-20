@@ -13,7 +13,8 @@
     "types": ["custom-node"],
     "paths": {
       "@/*": ["./src/*"],
-      "@prisma/client": ["./src/stubs/prisma-client"]
+      "@prisma/client": ["./src/stubs/prisma-client"],
+      "next/server": ["./test/stubs/next-server"]
     }
   },
   "include": ["src/core/**/*.ts", "src/core/**/*.tsx", "src/stubs/**/*.ts", "test/**/*.ts"],
