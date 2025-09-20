@@ -33,7 +33,7 @@ const timeFormatter = new Intl.DateTimeFormat("en-GB", {
 
 type LiveRcMetadata = NonNullable<Session["liveRc"]>;
 
-export default async function Home({ searchParams }: { searchParams?: { sessionId?: string } }) {
+export default async function Home({ searchParams }: { searchParams?: { sessionId?: string | string[] } }) {
   let sessions: Session[] = [];
   let loadError: string | null = null;
 
@@ -44,12 +44,24 @@ export default async function Home({ searchParams }: { searchParams?: { sessionI
     loadError = "Unable to load sessions";
   }
 
-  const selectedSessionId = searchParams?.sessionId ?? sessions[0]?.id ?? null;
-  const selectedSession = selectedSessionId ? sessions.find((session) => session.id === selectedSessionId) ?? null : null;
+  const rawSessionId = searchParams?.sessionId;
+  const normalizedSessionIdCandidate = Array.isArray(rawSessionId) ? rawSessionId[0] : rawSessionId;
+  const normalizedSessionId =
+    typeof normalizedSessionIdCandidate === "string" && normalizedSessionIdCandidate.trim().length > 0
+      ? normalizedSessionIdCandidate.trim()
+      : null;
+
+  const sessionMatchingNormalized = normalizedSessionId
+    ? sessions.find((session) => session.id === normalizedSessionId) ?? null
+    : null;
+
+  const selectedSession = sessionMatchingNormalized ?? sessions[0] ?? null;
+  const selectedSessionId = selectedSession?.id ?? null;
 
   let samples: TelemetrySample[] = [];
   let samplesError: string | null = null;
-  if (selectedSessionId) {
+  const shouldLoadTelemetry = typeof normalizedSessionId === "string" && normalizedSessionId.length > 0;
+  if (shouldLoadTelemetry && selectedSessionId) {
     try {
       samples = await listTelemetryForSession(selectedSessionId, { order: "asc" });
     } catch (error) {
