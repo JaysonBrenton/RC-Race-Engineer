@@ -10,8 +10,8 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { SESSION_KINDS, TIMING_PROVIDERS } from "@/core/domain/session";
 import type { ActionResult } from "../actions";
 import { createSessionAction } from "../actions";
@@ -20,7 +20,7 @@ import { useToast } from "./ToastProvider";
 const INITIAL_STATE: ActionResult = { success: false };
 
 export function SessionForm() {
-  const [state, formAction] = useFormState(createSessionAction, INITIAL_STATE);
+  const [state, formAction] = useActionState(createSessionAction, INITIAL_STATE);
   const { notify } = useToast();
   const [timingProvider, setTimingProvider] = useState("MANUAL");
   const formRef = useRef<HTMLFormElement>(null);
