@@ -15,13 +15,24 @@ function mergeRecord(base, updates) {
   return Object.assign({}, base, updates);
 }
 
-function createUpsert(store, keyResolver) {
+function createUpsert(store, keyResolver, options = {}) {
+  const { prefix = "record", afterSave } = options;
   return async (args) => {
     const key = keyResolver(args.where);
     const existing = store.get(key);
-    const record = existing ? mergeRecord(existing, args.update) : args.create;
-    store.set(key, record);
-    return record;
+    const base = existing ? mergeRecord(existing, args.update) : { ...args.create };
+    if (!base.id) {
+      base.id = `${prefix}-${randomUUID()}`;
+    }
+    if (!existing && !base.createdAt) {
+      base.createdAt = now();
+    }
+    base.updatedAt = now();
+    store.set(key, base);
+    if (afterSave) {
+      afterSave(base);
+    }
+    return base;
   };
 }
 
@@ -35,6 +46,7 @@ class PrismaClient {
     this._liveRcRounds = new Map();
     this._liveRcHeats = new Map();
     this._liveRcEntries = new Map();
+    this._liveRcEntriesById = new Map();
     this._liveRcResults = new Map();
     this._liveRcLaps = new Map();
     this._liveRcRoundRankings = new Map();
@@ -120,13 +132,14 @@ class PrismaClient {
     };
 
     this.liveRcEvent = {
-      upsert: createUpsert(this._liveRcEvents, (where) => String(where.externalEventId)),
+      upsert: createUpsert(this._liveRcEvents, (where) => String(where.externalEventId), { prefix: "event" }),
     };
 
     this.liveRcClass = {
       upsert: createUpsert(
         this._liveRcClasses,
         (where) => `${where.eventId_externalClassId.eventId}:${where.eventId_externalClassId.externalClassId}`,
+        { prefix: "class" },
       ),
     };
 
@@ -134,6 +147,7 @@ class PrismaClient {
       upsert: createUpsert(
         this._liveRcRounds,
         (where) => `${where.classId_type_ordinal.classId}:${where.classId_type_ordinal.type}:${where.classId_type_ordinal.ordinal}`,
+        { prefix: "round" },
       ),
     };
 
@@ -141,6 +155,7 @@ class PrismaClient {
       upsert: createUpsert(
         this._liveRcHeats,
         (where) => `${where.classId_externalHeatId.classId}:${where.classId_externalHeatId.externalHeatId}`,
+        { prefix: "heat" },
       ),
     };
 
@@ -148,6 +163,12 @@ class PrismaClient {
       upsert: createUpsert(
         this._liveRcEntries,
         (where) => `${where.classId_externalEntryId.classId}:${where.classId_externalEntryId.externalEntryId}`,
+        {
+          prefix: "entry",
+          afterSave: (entry) => {
+            this._liveRcEntriesById.set(entry.id, entry);
+          },
+        },
       ),
     };
 
@@ -155,13 +176,26 @@ class PrismaClient {
       upsert: createUpsert(
         this._liveRcResults,
         (where) => `${where.heatId_entryId.heatId}:${where.heatId_entryId.entryId}`,
+        { prefix: "result" },
       ),
+      findMany: async (args) => {
+        const { where, include, orderBy } = args;
+        const list = Array.from(this._liveRcResults.values()).filter((result) => result.heatId === where.heatId);
+        if (orderBy && orderBy.length > 0) {
+          list.sort((a, b) => compareOrderBy(a, b, orderBy));
+        }
+        return list.map((result) => ({
+          ...result,
+          entry: include?.entry ? this._liveRcEntriesById.get(result.entryId) ?? null : undefined,
+        }));
+      },
     };
 
     this.liveRcLap = {
       upsert: createUpsert(
         this._liveRcLaps,
         (where) => `${where.heatId_entryId_lapNo.heatId}:${where.heatId_entryId_lapNo.entryId}:${where.heatId_entryId_lapNo.lapNo}`,
+        { prefix: "lap" },
       ),
     };
 
@@ -170,6 +204,7 @@ class PrismaClient {
         this._liveRcRoundRankings,
         (where) =>
           `${where.roundId_entryId_rankMode.roundId}:${where.roundId_entryId_rankMode.entryId}:${where.roundId_entryId_rankMode.rankMode}`,
+        { prefix: "ranking" },
       ),
     };
 
@@ -177,6 +212,7 @@ class PrismaClient {
       upsert: createUpsert(
         this._liveRcMultiMainStandings,
         (where) => `${where.classId_entryId.classId}:${where.classId_entryId.entryId}`,
+        { prefix: "standing" },
       ),
     };
 
@@ -184,11 +220,38 @@ class PrismaClient {
       upsert: createUpsert(
         this._liveRcEventOverallResults,
         (where) => `${where.classId_entryId.classId}:${where.classId_entryId.entryId}`,
+        { prefix: "overall" },
       ),
     };
 
     this.$queryRaw = async () => [];
   }
+}
+
+function compareOrderBy(a, b, clauses) {
+  for (const clause of clauses) {
+    const entries = Object.entries(clause);
+    if (entries.length === 0) {
+      continue;
+    }
+    const [field, direction] = entries[0];
+    const aValue = normaliseOrderValue(a[field], direction);
+    const bValue = normaliseOrderValue(b[field], direction);
+    if (aValue < bValue) {
+      return direction === "desc" ? 1 : -1;
+    }
+    if (aValue > bValue) {
+      return direction === "desc" ? -1 : 1;
+    }
+  }
+  return 0;
+}
+
+function normaliseOrderValue(value, direction) {
+  if (value == null) {
+    return direction === "desc" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+  }
+  return value;
 }
 
 module.exports = {

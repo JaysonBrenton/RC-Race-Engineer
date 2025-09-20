@@ -13,19 +13,25 @@ import "@/server/bootstrap";
 import { listSessions } from "@/core/app/sessions/listSessions";
 import { listTelemetryForSession } from "@/core/app/telemetry/listTelemetryForSession";
 import { computeSummary } from "@/core/app/telemetry/summariseTelemetry";
+import { listHeatResults } from "@/core/app/liverc/listHeatResults";
 import type { Session } from "@/core/domain/session";
 import type { TelemetrySample } from "@/core/domain/telemetry";
+import type { LiveRcHeatResult } from "@/core/domain/liverc";
+import { compareLiveRcResults } from "@/core/domain/liverc";
 import { SessionForm } from "./_components/SessionForm";
 import { TelemetryTimeline } from "./_components/TelemetryTimeline";
 import { TelemetrySummaryPanel } from "./_components/TelemetrySummaryPanel";
 import { DemoTelemetryPanel } from "./_components/DemoTelemetryPanel";
 import { SignOutButton } from "./_components/SignOutButton";
+import { LiveRcHeatResultsChart } from "./_components/LiveRcHeatResultsChart";
 
 const timeFormatter = new Intl.DateTimeFormat("en-GB", {
   dateStyle: "medium",
   timeStyle: "short",
   timeZone: "UTC",
 });
+
+type LiveRcMetadata = NonNullable<Session["liveRc"]>;
 
 export default async function Home({ searchParams }: { searchParams?: { sessionId?: string } }) {
   let sessions: Session[] = [];
@@ -53,6 +59,17 @@ export default async function Home({ searchParams }: { searchParams?: { sessionI
   }
 
   const summary = computeSummary(samples);
+  let liveRcResults: LiveRcHeatResult[] = [];
+  let liveRcResultsError: string | null = null;
+
+  if (selectedSession?.liveRc) {
+    try {
+      liveRcResults = await listHeatResults(selectedSession.liveRc.heatId);
+    } catch (error) {
+      console.error("Failed to load LiveRC results", error);
+      liveRcResultsError = "Unable to load official LiveRC timing for this heat";
+    }
+  }
 
   return (
     <div className="min-h-screen bg-surface text-foreground">
@@ -129,6 +146,107 @@ export default async function Home({ searchParams }: { searchParams?: { sessionI
             <TelemetryTimeline samples={samples} />
           )}
         </section>
+
+        {selectedSession?.liveRc && (
+          <section className="space-y-4">
+            <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold">Official LiveRC results</h2>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  Scraped heat data is reconciled with the selected session so you can cross-check telemetry against official
+                  timing.
+                </p>
+              </div>
+              <div className="rounded-lg border border-neutral-200 bg-white px-4 py-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                  {selectedSession.liveRc.label}
+                </p>
+                <p className="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
+                  {selectedSession.liveRc.class?.name ?? "Unclassified"}
+                  {selectedSession.liveRc.event ? ` · ${selectedSession.liveRc.event.title}` : ""}
+                </p>
+                <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                  {formatLiveRcSchedule(selectedSession.liveRc)}
+                </p>
+                <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-500">
+                  {formatEventLocation(selectedSession.liveRc.event ?? null)}
+                </p>
+                {selectedSession.liveRc.liveStreamUrl && (
+                  <p className="mt-2 text-xs">
+                    <a
+                      href={selectedSession.liveRc.liveStreamUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-speed underline-offset-4 hover:underline"
+                    >
+                      Watch LiveRC stream
+                    </a>
+                  </p>
+                )}
+              </div>
+            </header>
+            {liveRcResultsError ? (
+              <div className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-900">{liveRcResultsError}</div>
+            ) : (
+              <div className="space-y-4">
+                <LiveRcHeatResultsChart results={liveRcResults} />
+                {liveRcResults.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[560px] divide-y divide-neutral-200 text-left text-sm dark:divide-neutral-800">
+                      <thead className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500">
+                        <tr>
+                          <th scope="col" className="px-3 py-2 text-right">
+                            Pos
+                          </th>
+                          <th scope="col" className="px-3 py-2">
+                            Driver
+                          </th>
+                          <th scope="col" className="px-3 py-2 text-right">
+                            Laps
+                          </th>
+                          <th scope="col" className="px-3 py-2 text-right">
+                            Fast lap
+                          </th>
+                          <th scope="col" className="px-3 py-2 text-right">
+                            Total time
+                          </th>
+                          <th scope="col" className="px-3 py-2 text-right">
+                            Interval
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                        {[...liveRcResults].sort(compareLiveRcResults).map((result) => (
+                          <tr key={result.id} className="align-top">
+                            <td className="px-3 py-2 text-right text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                              {result.finishPosition ?? "—"}
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{result.driverName}</div>
+                              <div className="text-xs text-neutral-500 dark:text-neutral-500">{formatDriverMeta(result)}</div>
+                            </td>
+                            <td className="px-3 py-2 text-right text-sm text-neutral-700 dark:text-neutral-300">
+                              {result.lapsCompleted ?? "—"}
+                            </td>
+                            <td className="px-3 py-2 text-right text-sm text-neutral-700 dark:text-neutral-300">
+                              {formatFastLap(result.fastLapMs)}
+                            </td>
+                            <td className="px-3 py-2 text-right text-sm text-neutral-700 dark:text-neutral-300">
+                              {formatTotalTime(result.totalTimeMs)}
+                            </td>
+                            <td className="px-3 py-2 text-right text-sm text-neutral-700 dark:text-neutral-300">
+                              {formatInterval(result.intervalMs)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        )}
       </main>
     </div>
   );
@@ -182,4 +300,85 @@ function formatKind(kind: Session["kind"]): string {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatLiveRcSchedule(metadata: LiveRcMetadata): string {
+  if (metadata.scheduledStart) {
+    const duration = formatDurationSeconds(metadata.durationSeconds);
+    const base = `${timeFormatter.format(new Date(metadata.scheduledStart))} UTC`;
+    return duration ? `${base} · ${duration}` : base;
+  }
+  return "Schedule pending";
+}
+
+function formatEventLocation(event: LiveRcMetadata["event"] | null): string {
+  const parts: string[] = [];
+  if (event?.facility) {
+    parts.push(event.facility);
+  }
+  const locality = [event?.city, event?.region, event?.country].filter((value) => value && value.trim().length > 0).join(", ");
+  if (locality) {
+    parts.push(locality);
+  }
+  return parts.length > 0 ? parts.join(" • ") : "Location TBD";
+}
+
+function formatFastLap(ms: number | null): string {
+  if (ms == null) {
+    return "—";
+  }
+  return `${(ms / 1000).toFixed(3)} s`;
+}
+
+function formatTotalTime(ms: number | null): string {
+  if (ms == null) {
+    return "—";
+  }
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const millis = ms % 1000;
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}.${millis.toString().padStart(3, "0")}`;
+}
+
+function formatInterval(ms: number | null): string {
+  if (ms == null) {
+    return "—";
+  }
+  if (ms === 0) {
+    return "Leader";
+  }
+  return `+${(ms / 1000).toFixed(3)} s`;
+}
+
+function formatDriverMeta(result: LiveRcHeatResult): string {
+  const parts: string[] = [];
+  if (result.carNumber) {
+    parts.push(`#${result.carNumber}`);
+  }
+  if (result.vehicle) {
+    parts.push(result.vehicle);
+  }
+  if (result.hometownCity || result.hometownRegion) {
+    parts.push([result.hometownCity, result.hometownRegion].filter(Boolean).join(", "));
+  }
+  if (result.sponsor) {
+    parts.push(result.sponsor);
+  }
+  return parts.length > 0 ? parts.join(" • ") : "—";
+}
+
+function formatDurationSeconds(seconds: number | null): string | null {
+  if (seconds == null) {
+    return null;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  if (minutes > 0 && remainder > 0) {
+    return `${minutes}m ${remainder}s`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m`;
+  }
+  return `${remainder}s`;
 }
