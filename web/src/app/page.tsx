@@ -24,6 +24,7 @@ import { TelemetrySummaryPanel } from "./_components/TelemetrySummaryPanel";
 import { DemoTelemetryPanel } from "./_components/DemoTelemetryPanel";
 import { SignOutButton } from "./_components/SignOutButton";
 import { LiveRcHeatResultsChart } from "./_components/LiveRcHeatResultsChart";
+import { shouldLoadTelemetry } from "./telemetryLoadingGuard";
 
 const timeFormatter = new Intl.DateTimeFormat("en-GB", {
   dateStyle: "medium",
@@ -60,8 +61,12 @@ export default async function Home({ searchParams }: { searchParams?: { sessionI
 
   let samples: TelemetrySample[] = [];
   let samplesError: string | null = null;
-  const shouldLoadTelemetry = typeof normalizedSessionId === "string" && normalizedSessionId.length > 0;
-  if (shouldLoadTelemetry && selectedSessionId) {
+  const allowTelemetryFetch = shouldLoadTelemetry({
+    selectedSessionId,
+    normalizedSessionId,
+    sessionMatchingNormalized,
+  });
+  if (allowTelemetryFetch && selectedSessionId) {
     try {
       samples = await listTelemetryForSession(selectedSessionId, { order: "asc" });
     } catch (error) {
