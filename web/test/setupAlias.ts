@@ -26,5 +26,9 @@ const compiledRoot = path.resolve(__dirname, "..");
     const target = path.join(compiledRoot, "src", "stubs", "prisma-client");
     return originalResolve.call(this, target, parent, isMain, options);
   }
+  if (request === "next/server") {
+    const target = path.join(compiledRoot, "test", "stubs", "next-server");
+    return originalResolve.call(this, target, parent, isMain, options);
+  }
   return originalResolve.call(this, request, parent, isMain, options);
 };
