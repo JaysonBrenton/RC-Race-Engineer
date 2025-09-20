@@ -49,14 +49,17 @@ export default async function Home({ searchParams }: { searchParams?: { sessionI
     ? rawSessionId[0]?.trim() || null
     : rawSessionId?.trim() || null;
 
-  const selectedSessionId = normalizedSessionId && sessions.some((session) => session.id === normalizedSessionId)
-    ? normalizedSessionId
-    : sessions[0]?.id ?? null;
-  const selectedSession = selectedSessionId ? sessions.find((session) => session.id === selectedSessionId) ?? null : null;
+  const sessionMatchingNormalized = normalizedSessionId
+    ? sessions.find((session) => session.id === normalizedSessionId) ?? null
+    : null;
+
+  const selectedSession = sessionMatchingNormalized ?? sessions[0] ?? null;
+  const selectedSessionId = selectedSession?.id ?? null;
 
   let samples: TelemetrySample[] = [];
   let samplesError: string | null = null;
-  if (typeof normalizedSessionId === "string" && normalizedSessionId.length > 0 && selectedSessionId) {
+  const shouldLoadTelemetry = typeof normalizedSessionId === "string" && normalizedSessionId.length > 0;
+  if (shouldLoadTelemetry && selectedSessionId) {
     try {
       samples = await listTelemetryForSession(selectedSessionId, { order: "asc" });
     } catch (error) {
