@@ -3,7 +3,7 @@
  * Purpose: Handles the shared-passphrase login flow for the development
  *          environment.
  * Notable behaviours: Submits credentials through `signInAction` with
- *                    `useFormState`, forwards redirect targets, and renders
+ *                    `useActionState`, forwards redirect targets, and renders
  *                    inline error messaging alongside a pending-aware submit
  *                    button.
  */
@@ -19,7 +19,7 @@ import { signInAction } from "./actions";
 const INITIAL_STATE: AuthResult = { success: false };
 
 export function LoginForm({ redirectTo }: { redirectTo: string }) {
-  const [state, action] = useActionState(signInAction, INITIAL_STATE);
+  const [state, action] = useActionState<AuthResult, FormData>(signInAction, INITIAL_STATE);
 
   return (
     <form action={action} className="space-y-5 rounded-lg border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">

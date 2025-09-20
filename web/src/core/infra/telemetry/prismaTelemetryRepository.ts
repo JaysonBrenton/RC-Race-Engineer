@@ -6,12 +6,13 @@
 import type { Prisma } from "@prisma/client";
 
 import type { TelemetrySample } from "@/core/domain/telemetry";
-import { prisma } from "@/core/infra/db/prismaClient";
+import { getPrismaClient } from "@/core/infra/db/prismaClient";
 import type { TelemetryRepository } from "@/core/app/telemetry/ports";
 import { registerTelemetryRepository } from "@/core/app/telemetry/serviceLocator";
 
 const repository: TelemetryRepository = {
   async createForSession(sessionId, data) {
+    const prisma = getPrismaClient();
     const created = await prisma.telemetrySample.create({
       data: {
         sessionId,
@@ -28,6 +29,7 @@ const repository: TelemetryRepository = {
   },
 
   async listForSession(sessionId, options) {
+    const prisma = getPrismaClient();
     const order = options?.order ?? "asc";
     const limit = options?.limit ?? 500;
     const samples = await prisma.telemetrySample.findMany({
