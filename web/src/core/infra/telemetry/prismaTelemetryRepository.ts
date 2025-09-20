@@ -31,7 +31,7 @@ const repository: TelemetryRepository = {
   async listForSession(sessionId, options) {
     const prisma = getPrismaClient();
     const order = options?.order ?? "asc";
-    const limit = options?.limit ?? 500;
+    const limit = Math.min(options?.limit ?? 500, 500);
     const samples = await prisma.telemetrySample.findMany({
       where: { sessionId },
       orderBy: { recordedAt: order },
