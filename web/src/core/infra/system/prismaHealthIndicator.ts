@@ -8,6 +8,7 @@ import { performance } from "node:perf_hooks";
 import { getPrismaClient } from "@/core/infra/db/prismaClient";
 import type { ReadinessProbeResult } from "@/core/app/system/ports";
 import { registerReadinessDependencies } from "@/core/app/system/serviceLocator";
+import { hasPendingMigrations } from "./hasPendingMigrations";
 
 export async function databaseProbe(): Promise<ReadinessProbeResult> {
   const started = performance.now();
@@ -16,16 +17,27 @@ export async function databaseProbe(): Promise<ReadinessProbeResult> {
     // production traffic or requiring table-level access.
     const prisma = getPrismaClient();
     await prisma.$queryRaw`SELECT 1`;
+    const pendingMigrations = await hasPendingMigrations();
+    const durationMs = performance.now() - started;
+    if (pendingMigrations) {
+      return {
+        name: "database",
+        healthy: false,
+        durationMs,
+        details: "Pending database migrations",
+      };
+    }
     return {
       name: "database",
       healthy: true,
-      durationMs: performance.now() - started,
+      durationMs,
     };
   } catch (error) {
+    const durationMs = performance.now() - started;
     return {
       name: "database",
       healthy: false,
-      durationMs: performance.now() - started,
+      durationMs,
       // Surface the underlying error message when available so operators have a
       // head start on diagnosing outages.
       details: error instanceof Error ? error.message : "Database probe failed",
