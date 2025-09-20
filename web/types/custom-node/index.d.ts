@@ -12,6 +12,14 @@ declare module "node:test" {
 
   export interface MockTracker {
     timers: MockTimers;
+    fn: <T extends (...args: any[]) => any>(implementation?: T) => T & {
+      mock: {
+        calls: Array<{ arguments: Parameters<T> }>;
+      };
+    };
+    module: (specifier: string, factory: () => Record<string, unknown>) => void;
+    reset: () => void;
+    restoreAll: () => void;
   }
 
   export const mock: MockTracker;
@@ -60,6 +68,7 @@ declare module "node:perf_hooks" {
     now(): number;
   };
 }
+
 
 declare const __dirname: string;
 declare const __filename: string;
