@@ -8,9 +8,11 @@ _Principles: ship small, keep main green, document decisions with ADRs._
 - [x] Repo guardrails docs (AGENTS, design/UX/model)
 - [x] API heartbeat: /api/health, /api/ready, /api/version
 - [x] Data foundation: Postgres + Prisma (Sessions, Telemetry)
-- [ ] Endpoints: POST /api/sessions, POST /api/sessions/[id]/events, GET lists
-- [ ] Minimal UI: create/list sessions, post demo event *(create/list done; demo event pending)*
-- [ ] First ADRs: runtime mode; telemetry store/retention; color tokens plan
+- [x] Endpoints: POST /api/sessions, POST /api/sessions/[id]/events, GET lists *(contracts tracked in [docs/api/sessions.md](./api/sessions.md); retention bounded per [ADR-20250217-telemetry-retention](./adr/ADR-20250217-telemetry-retention.md))*
+- [x] Minimal UI: create/list sessions, demo telemetry injector, timeline *(landing view wires the session form, list, metrics, and injector in `web/src/app/page.tsx`; see [Telemetry workflow](../README.md#telemetry-workflow-foundation-release))*
+- [x] First ADRs: runtime mode; telemetry store/retention; color tokens plan *(see [ADR-20250217-runtime-mode](./adr/ADR-20250217-runtime-mode.md), [ADR-20250217-telemetry-retention](./adr/ADR-20250217-telemetry-retention.md), [ADR-20250217-color-tokens](./adr/ADR-20250217-color-tokens.md))*
+
+**Residual 0.1 wrap-up:** cut the first tagged build, update [docs/build-log.md](./build-log.md) with the release artefact details, and run a final ingest/UI smoke test pass before calling the milestone complete.
 
 ## 0.2 MVP
 - [ ] Basic auth (dev)
