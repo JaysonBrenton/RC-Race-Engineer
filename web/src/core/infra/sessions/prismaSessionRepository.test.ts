@@ -1,3 +1,10 @@
+/**
+ * File: web/src/core/infra/sessions/prismaSessionRepository.test.ts
+ * Purpose: Validates the mapping logic inside the Prisma session repository to
+ *          ensure LiveRC relationships are translated into the domain shape as
+ *          expected.
+ */
+
 import "../../../../test/setupAlias";
 import assert from "node:assert/strict";
 import test from "node:test";

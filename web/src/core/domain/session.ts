@@ -1,3 +1,12 @@
+/**
+ * File: web/src/core/domain/session.ts
+ * Purpose: Defines the canonical session domain model, including enumerations
+ *          for session attributes, validation helpers, and the core input
+ *          validation routine used by the application layer.
+ * Notes:  Domain modules remain free of IO and framework concerns so that
+ *          validation logic can be tested and reused across adapters.
+ */
+
 export const SESSION_KINDS = [
   "FP1",
   "FP2",
@@ -178,6 +187,12 @@ export function validateCreateSessionInput(payload: unknown): CreateSessionInput
   };
 }
 
+/**
+ * Normalises a value into an ISO timestamp string while recording helpful error
+ * messages that can be surfaced to API consumers. Returning `null` for invalid
+ * input keeps the validation flow linear without additional branching in the
+ * caller.
+ */
 function coerceIsoDate(value: unknown, field: string, issues: string[]): string | null {
   if (value == null || value === "") {
     return null;

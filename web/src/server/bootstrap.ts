@@ -1,3 +1,11 @@
+/**
+ * File: web/src/server/bootstrap.ts
+ * Purpose: Server-only entry point responsible for wiring infrastructure
+ *          adapters into the application layer service locators.
+ * Notes:  Import this module from API routes or server actions to ensure the
+ *          Prisma-backed adapters are registered before handling requests.
+ */
+
 "use server";
 
 import "@/core/infra/sessions/prismaSessionRepository";
