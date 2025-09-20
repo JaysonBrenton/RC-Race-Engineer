@@ -12,6 +12,8 @@ export interface SessionRepository {
   create(data: CreateSessionInput): Promise<Session>;
   // Retrieve a slice of sessions, typically the most recent records.
   list(): Promise<Session[]>;
+  // Fetch a single session by identifier or null when not found.
+  getById(id: string): Promise<Session | null>;
 }
 
 export interface SessionDependencies {

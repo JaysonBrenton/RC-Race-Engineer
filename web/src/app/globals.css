@@ -1,12 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0f172a;
+  --foreground: #111111;
+  --surface: #f5f6f8;
+  --surface-elevated: #ffffff;
+  --grid-stroke: rgba(15, 23, 42, 0.08);
+  --color-speed: #2563eb;
+  --color-speed-strong: #1d4ed8;
+  --color-speed-tint: rgba(37, 99, 235, 0.12);
+  --color-throttle: #16a34a;
+  --color-brake: #dc2626;
+  --color-brake-fill: rgba(220, 38, 38, 0.15);
+  --color-rpm: #7c3aed;
+  --color-gear: #f59e0b;
+  --color-temp-tyre: #fb923c;
+  --color-temp-brake: #f97316;
+  --color-ambient: #0ea5e9;
+  --color-track: #facc15;
+  --focus-ring: var(--color-speed);
 }
 
 @theme inline {
-  --color-background: var(--background);
+  --color-background: var(--surface);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -14,14 +30,89 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #020617;
+    --foreground: #f4f4f5;
+    --surface: #020617;
+    --surface-elevated: #0f172a;
+    --grid-stroke: rgba(148, 163, 184, 0.2);
+    --color-brake-fill: rgba(248, 113, 113, 0.2);
   }
 }
 
 body {
   margin: 0;
-  background: var(--background);
+  background: var(--surface);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.text-foreground {
+  color: var(--foreground);
+}
+
+.bg-speed {
+  background-color: var(--color-speed);
+}
+
+.bg-speed-dark {
+  background-color: var(--color-speed-strong);
+}
+
+.bg-speed-tint {
+  background-color: var(--color-speed-tint);
+}
+
+.hover\:bg-speed-dark:hover {
+  background-color: var(--color-speed-strong);
+}
+
+.focus-visible\:outline-speed:focus-visible {
+  outline-color: var(--focus-ring);
+}
+
+.border-speed {
+  border-color: var(--color-speed);
+}
+
+.hover\:border-speed:hover {
+  border-color: var(--color-speed);
+}
+
+.text-speed {
+  color: var(--color-speed);
+}
+
+.text-throttle {
+  color: var(--color-throttle);
+}
+
+.text-brake {
+  color: var(--color-brake);
+}
+
+.text-rpm {
+  color: var(--color-rpm);
+}
+
+.text-gear {
+  color: var(--color-gear);
+}
+
+.bg-throttle {
+  background-color: var(--color-throttle);
+}
+
+.bg-brake {
+  background-color: var(--color-brake);
+}
+
+.bg-speed::selection,
+.text-speed::selection,
+.text-throttle::selection,
+.text-brake::selection {
+  background-color: var(--color-speed-tint);
 }

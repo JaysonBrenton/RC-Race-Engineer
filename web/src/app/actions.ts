@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import "@/server/bootstrap";
 import { createSession } from "@/core/app/sessions/createSession";
+import type { Session } from "@/core/domain/session";
 
 export interface ActionResult {
   success: boolean;
   error?: string;
   issues?: string[];
+  session?: Session;
 }
 
 export async function createSessionAction(
@@ -20,12 +22,14 @@ export async function createSessionAction(
     kind: formData.get("kind"),
     scheduledStart: formData.get("scheduledStart"),
     scheduledEnd: formData.get("scheduledEnd"),
+    timingProvider: formData.get("timingProvider"),
+    liveRcHeatId: formData.get("liveRcHeatId"),
   };
 
   try {
-    await createSession(payload);
+    const session = await createSession(payload);
     revalidatePath("/");
-    return { success: true };
+    return { success: true, session };
   } catch (error) {
     if (error && typeof error === "object" && "issues" in error) {
       return { success: false, error: "Validation failed", issues: (error as { issues: string[] }).issues };
