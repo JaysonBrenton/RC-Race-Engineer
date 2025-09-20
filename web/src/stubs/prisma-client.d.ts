@@ -47,17 +47,17 @@ export declare namespace Prisma {
     createdAt: Date;
   };
 
-  export type LiveRcEvent = { id: string; externalEventId: number; [key: string]: any };
-  export type LiveRcClass = { id: string; eventId: string; externalClassId: number; [key: string]: any };
-  export type LiveRcRound = { id: string; classId: string; type: string; ordinal: number; [key: string]: any };
-  export type LiveRcHeat = { id: string; classId: string; externalHeatId: number; [key: string]: any };
-  export type LiveRcEntry = { id: string; classId: string; externalEntryId: number; [key: string]: any };
-  export type LiveRcResult = { id: string; heatId: string; entryId: string; externalResultId: number; [key: string]: any };
-  export type LiveRcLap = { id: string; heatId: string; entryId: string; lapNo: number; [key: string]: any };
-  export type LiveRcRoundRanking = { id: string; roundId: string; entryId: string; rankMode: string; [key: string]: any };
-  export type LiveRcMultiMainStanding = { id: string; eventId: string; classId: string; entryId: string; [key: string]: any };
-  export type LiveRcEventOverallResult = { id: string; eventId: string; classId: string; entryId: string; [key: string]: any };
-  export type LiveRcSourceCache = { id: string; url: string; [key: string]: any };
+  export type LiveRcEvent = { id: string; externalEventId: number; [key: string]: unknown };
+  export type LiveRcClass = { id: string; eventId: string; externalClassId: number; [key: string]: unknown };
+  export type LiveRcRound = { id: string; classId: string; type: string; ordinal: number; [key: string]: unknown };
+  export type LiveRcHeat = { id: string; classId: string; externalHeatId: number; [key: string]: unknown };
+  export type LiveRcEntry = { id: string; classId: string; externalEntryId: number; [key: string]: unknown };
+  export type LiveRcResult = { id: string; heatId: string; entryId: string; externalResultId: number; [key: string]: unknown };
+  export type LiveRcLap = { id: string; heatId: string; entryId: string; lapNo: number; [key: string]: unknown };
+  export type LiveRcRoundRanking = { id: string; roundId: string; entryId: string; rankMode: string; [key: string]: unknown };
+  export type LiveRcMultiMainStanding = { id: string; eventId: string; classId: string; entryId: string; [key: string]: unknown };
+  export type LiveRcEventOverallResult = { id: string; eventId: string; classId: string; entryId: string; [key: string]: unknown };
+  export type LiveRcSourceCache = { id: string; url: string; [key: string]: unknown };
 
   export type SessionInclude = {
     liveRcHeat?:
@@ -75,7 +75,7 @@ export declare namespace Prisma {
 }
 
 type SessionCreateArgs = {
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   include?: Prisma.SessionInclude;
 };
 
@@ -91,7 +91,7 @@ type SessionFindUniqueArgs = {
 };
 
 type TelemetryCreateArgs = {
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 };
 
 type TelemetryFindManyArgs = {
@@ -102,8 +102,8 @@ type TelemetryFindManyArgs = {
 
 type UpsertArgs<Where> = {
   where: Where;
-  create: Record<string, any>;
-  update: Record<string, any>;
+  create: Record<string, unknown>;
+  update: Record<string, unknown>;
 };
 
 export declare class PrismaClient {
