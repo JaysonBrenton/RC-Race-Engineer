@@ -47,12 +47,81 @@ export declare namespace Prisma {
     createdAt: Date;
   };
 
-  export type LiveRcEvent = { id: string; externalEventId: number; [key: string]: unknown };
-  export type LiveRcClass = { id: string; eventId: string; externalClassId: number; [key: string]: unknown };
-  export type LiveRcRound = { id: string; classId: string; type: string; ordinal: number; [key: string]: unknown };
-  export type LiveRcHeat = { id: string; classId: string; externalHeatId: number; [key: string]: unknown };
-  export type LiveRcEntry = { id: string; classId: string; externalEntryId: number; [key: string]: unknown };
-  export type LiveRcResult = { id: string; heatId: string; entryId: string; externalResultId: number; [key: string]: unknown };
+  export type LiveRcEvent = {
+    id: string;
+    externalEventId: number;
+    title: string;
+    trackName: string | null;
+    facility: string | null;
+    city: string | null;
+    region: string | null;
+    country: string | null;
+    timeZone: string | null;
+    startTime: Date | null;
+    endTime: Date | null;
+    website: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  export type LiveRcClass = {
+    id: string;
+    eventId: string;
+    externalClassId: number;
+    name: string;
+    description: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  export type LiveRcRound = {
+    id: string;
+    classId: string;
+    type: string;
+    ordinal: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  export type LiveRcHeat = {
+    id: string;
+    classId: string;
+    externalHeatId: number;
+    label: string;
+    round: number | null;
+    attempt: number | null;
+    scheduledStart: Date | null;
+    durationSeconds: number | null;
+    status: string | null;
+    liveStreamUrl: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  export type LiveRcEntry = {
+    id: string;
+    classId: string;
+    externalEntryId: number;
+    driverName: string;
+    carNumber: string | null;
+    transponder: string | null;
+    vehicle: string | null;
+    sponsor: string | null;
+    hometownCity: string | null;
+    hometownRegion: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  export type LiveRcResult = {
+    id: string;
+    heatId: string;
+    entryId: string;
+    externalResultId: number;
+    finishPosition: number | null;
+    lapsCompleted: number | null;
+    totalTimeMs: number | null;
+    fastLapMs: number | null;
+    intervalMs: number | null;
+    status: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
   export type LiveRcLap = { id: string; heatId: string; entryId: string; lapNo: number; [key: string]: unknown };
   export type LiveRcRoundRanking = { id: string; roundId: string; entryId: string; rankMode: string; [key: string]: unknown };
   export type LiveRcMultiMainStanding = { id: string; eventId: string; classId: string; entryId: string; [key: string]: unknown };
@@ -67,6 +136,10 @@ export declare namespace Prisma {
             class?: boolean | { include?: { event?: boolean } };
           };
         };
+  };
+
+  export type LiveRcResultInclude = {
+    entry?: boolean;
   };
 
   export interface PrismaClientOptions {
@@ -98,6 +171,12 @@ type TelemetryFindManyArgs = {
   where: { sessionId: string };
   orderBy: { recordedAt: "asc" | "desc" };
   take?: number;
+};
+
+type LiveRcResultFindManyArgs = {
+  where: { heatId: string };
+  include?: Prisma.LiveRcResultInclude;
+  orderBy?: { finishPosition?: "asc" | "desc"; fastLapMs?: "asc" | "desc"; totalTimeMs?: "asc" | "desc" }[];
 };
 
 type UpsertArgs<Where> = {
@@ -155,6 +234,9 @@ export declare class PrismaClient {
 
   liveRcResult: {
     upsert(args: UpsertArgs<{ heatId_entryId: { heatId: string; entryId: string } }>): Promise<Prisma.LiveRcResult>;
+    findMany(
+      args: LiveRcResultFindManyArgs,
+    ): Promise<(Prisma.LiveRcResult & { entry?: Prisma.LiveRcEntry | null })[]>;
   };
 
   liveRcLap: {
