@@ -3,6 +3,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { normalizeRedirectTarget } from "./redirect";
+
 export interface AuthResult {
   success: boolean;
   error?: string;
@@ -12,7 +14,7 @@ const COOKIE_NAME = "rc-dev-auth";
 
 export async function signInAction(_prev: AuthResult, formData: FormData): Promise<AuthResult> {
   const passcode = `${formData.get("passcode") ?? ""}`.trim();
-  const redirectTo = `${formData.get("redirect") ?? "/"}`;
+  const redirectTo = normalizeRedirectTarget(formData.get("redirect"));
   const expected = process.env.DEV_AUTH_PASSWORD ?? "engineer";
 
   if (!passcode) {
@@ -31,7 +33,7 @@ export async function signInAction(_prev: AuthResult, formData: FormData): Promi
     maxAge: 60 * 60 * 12,
   });
 
-  redirect(redirectTo || "/");
+  redirect(redirectTo);
 }
 
 export async function signOutAction() {
