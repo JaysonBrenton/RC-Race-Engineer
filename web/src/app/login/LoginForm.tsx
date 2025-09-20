@@ -10,7 +10,8 @@
 
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 
 import type { AuthResult } from "./actions";
 import { signInAction } from "./actions";
@@ -18,7 +19,7 @@ import { signInAction } from "./actions";
 const INITIAL_STATE: AuthResult = { success: false };
 
 export function LoginForm({ redirectTo }: { redirectTo: string }) {
-  const [state, action] = useFormState(signInAction, INITIAL_STATE);
+  const [state, action] = useActionState(signInAction, INITIAL_STATE);
 
   return (
     <form action={action} className="space-y-5 rounded-lg border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
