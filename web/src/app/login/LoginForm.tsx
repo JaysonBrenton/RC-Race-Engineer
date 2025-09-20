@@ -1,3 +1,13 @@
+/**
+ * File: web/src/app/login/LoginForm.tsx
+ * Purpose: Handles the shared-passphrase login flow for the development
+ *          environment.
+ * Notable behaviours: Submits credentials through `signInAction` with
+ *                    `useFormState`, forwards redirect targets, and renders
+ *                    inline error messaging alongside a pending-aware submit
+ *                    button.
+ */
+
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";

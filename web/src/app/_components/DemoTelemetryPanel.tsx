@@ -1,3 +1,12 @@
+/**
+ * File: web/src/app/_components/DemoTelemetryPanel.tsx
+ * Purpose: Provides a client-side control for posting synthetic telemetry
+ *          samples to the API when validating ingest flows.
+ * Notable behaviours: Posts demo events to `/api/sessions/{id}/events`, shows
+ *                    toast feedback, and refreshes the router after successful
+ *                    injection.
+ */
+
 "use client";
 
 import { useState, useTransition } from "react";

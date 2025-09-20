@@ -1,3 +1,12 @@
+/**
+ * File: web/src/app/_components/SignOutButton.tsx
+ * Purpose: Provides a small client-side control for terminating the current
+ *          session from the dashboard header.
+ * Notable behaviours: Calls the `signOutAction` inside `useTransition` to show
+ *                    pending feedback and disables the button while the action
+ *                    resolves.
+ */
+
 "use client";
 
 import { useTransition } from "react";

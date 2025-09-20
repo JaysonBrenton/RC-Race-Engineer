@@ -1,3 +1,12 @@
+/**
+ * File: web/src/app/page.tsx
+ * Purpose: Server component composing the telemetry command centre home view.
+ * Notable behaviours: Bootstraps dependencies via `@/server/bootstrap`, loads
+ *                    sessions and telemetry data, computes summary metrics, and
+ *                    coordinates error handling/child components for the
+ *                    dashboard layout.
+ */
+
 import Link from "next/link";
 
 import "@/server/bootstrap";

@@ -1,3 +1,12 @@
+/**
+ * File: web/src/app/_components/ToastProvider.tsx
+ * Purpose: Supplies a lightweight toast context for client components to raise
+ *          success/error/info notifications.
+ * Notable behaviours: Generates unique toast IDs, auto-dismisses messages after
+ *                    five seconds, and exposes a `useToast` hook that enforces
+ *                    provider usage.
+ */
+
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
