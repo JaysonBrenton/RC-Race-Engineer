@@ -17,6 +17,11 @@
       "next/server": ["./test/stubs/next-server"]
     }
   },
-  "include": ["src/core/**/*.ts", "src/core/**/*.tsx", "src/stubs/**/*.ts", "test/**/*.ts"],
+  "include": [
+    "src/core/**/*.ts",
+    "src/core/**/*.tsx",
+    "src/stubs/**/*.d.ts",
+    "test/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }
