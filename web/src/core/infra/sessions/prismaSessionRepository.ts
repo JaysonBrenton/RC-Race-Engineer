@@ -1,3 +1,10 @@
+/**
+ * File: web/src/core/infra/sessions/prismaSessionRepository.ts
+ * Purpose: Provides the Prisma-backed implementation of the session repository
+ *          contract, handling persistence concerns and mapping Prisma models
+ *          into domain-friendly shapes.
+ */
+
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/core/infra/db/prismaClient";
 import type { CreateSessionInput, Session, SessionLiveRcMetadata, TimingProvider } from "@/core/domain/session";
@@ -6,6 +13,9 @@ import { registerSessionRepository } from "@/core/app/sessions/serviceLocator";
 
 const repository: SessionRepository = {
   async create(data: CreateSessionInput) {
+    // Persist the session while letting Prisma coerce optional date fields into
+    // nullable columns. We include LiveRC relations so the caller receives a
+    // complete view immediately after creation.
     const created = await prisma.session.create({
       data: {
         name: data.name,
@@ -22,6 +32,8 @@ const repository: SessionRepository = {
     return mapSession(created);
   },
   async list() {
+    // Limit the result set to the latest 25 sessions to keep payload sizes
+    // predictable for the API.
     const sessions = await prisma.session.findMany({
       orderBy: { createdAt: "desc" },
       take: 25,
@@ -31,11 +43,15 @@ const repository: SessionRepository = {
   },
 };
 
+// Immediately register this repository so that the application layer can
+// retrieve it during server bootstrap.
 registerSessionRepository(repository);
 
 export { repository as prismaSessionRepository };
 
 function mapSession(model: Prisma.Session): Session {
+  // Convert date objects into ISO strings and attach LiveRC metadata when the
+  // relation is loaded.
   return {
     id: model.id,
     name: model.name,
